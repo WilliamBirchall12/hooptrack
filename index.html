@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="description" content="Basketball player progress tracker by Coach Will" />
-  <meta name="theme-color" content="#FF6B35" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="HoopTrack" />
-  <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+  <meta name="theme-color" content="#FF6B35"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="HoopTrack"/>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png"/>
   <title>HoopTrack — Coach Will</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -32,10 +31,36 @@
 html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(--fb);font-size:15px;line-height:1.5;overflow-x:hidden}
 #app{display:flex;flex-direction:column;height:100dvh;max-width:480px;margin:0 auto;position:relative;overflow:hidden}
 
+/* LOADING */
+#loadingScreen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.spinner{width:40px;height:40px;border:3px solid var(--border-2);border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-size:14px;color:var(--text-2)}
+
+/* OFFLINE BANNER */
+#offlineBanner{background:#F04747;color:#fff;text-align:center;padding:8px;font-size:13px;font-weight:600;display:none;flex-shrink:0}
+
+/* SETUP SCREEN */
+#setupScreen{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;text-align:center;gap:0;overflow-y:auto}
+.setup-logo{width:80px;height:80px;object-fit:contain;margin-bottom:16px}
+.setup-title{font-family:var(--fd);font-size:32px;font-weight:900;margin-bottom:8px}
+.setup-title em{color:var(--orange);font-style:normal}
+.setup-sub{font-size:14px;color:var(--text-2);margin-bottom:28px;line-height:1.6;max-width:300px}
+.setup-step{background:var(--navy-3);border:1px solid var(--border-2);border-radius:14px;padding:16px 18px;margin-bottom:12px;text-align:left;width:100%;max-width:360px}
+.setup-step-num{font-family:var(--fd);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--orange);margin-bottom:4px}
+.setup-step-txt{font-size:13px;color:var(--text-2);line-height:1.5}
+.setup-step-txt strong{color:var(--text)}
+.setup-inp{width:100%;max-width:360px;background:var(--navy-3);border:1.5px solid var(--border-2);border-radius:12px;padding:13px 16px;font-family:var(--fb);font-size:15px;color:var(--text);outline:none;margin:12px 0 4px}
+.setup-inp:focus{border-color:var(--orange)}
+.setup-inp::placeholder{color:var(--text-3)}
+.setup-btn{width:100%;max-width:360px;background:var(--orange);color:#fff;border:none;border-radius:12px;padding:14px;font-family:var(--fb);font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(255,107,53,.3);margin-top:8px}
+.setup-err{font-size:12px;color:var(--red);margin-top:6px;max-width:360px;display:none}
+.setup-hint{font-size:12px;color:var(--text-3);margin-top:8px;max-width:360px;line-height:1.5}
+
 /* HEADER */
 .hdr{background:var(--navy-2);padding:calc(var(--st) + 12px) 18px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0;z-index:10}
 .hdr-logo{display:flex;align-items:center;gap:10px}
-.logo-img{width:36px;height:36px;border-radius:8px;object-fit:cover}
+.logo-img{width:34px;height:34px;border-radius:8px;object-fit:cover}
 .logo-txt{font-family:var(--fd);font-size:22px;font-weight:800;letter-spacing:.5px;line-height:1}
 .logo-txt em{color:var(--orange);font-style:normal}
 .hdr-actions{display:flex;align-items:center;gap:8px}
@@ -43,22 +68,28 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
 .icon-btn:active{transform:scale(.92)}
 .icon-btn.active{background:var(--orange);border-color:var(--orange);color:#fff;box-shadow:0 0 16px rgba(255,107,53,.4)}
 
-/* HOME SCREEN */
-#homeScreen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center}
-.home-logo-img{width:130px;height:130px;object-fit:contain;margin-bottom:20px;filter:drop-shadow(0 0 30px rgba(255,107,53,.4))}
+/* HOME */
+#homeScreen{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center}
+.home-logo-img{width:120px;height:120px;object-fit:contain;margin-bottom:18px;filter:drop-shadow(0 0 30px rgba(255,107,53,.4))}
 .home-title{font-family:var(--fd);font-size:38px;font-weight:900;letter-spacing:1px;line-height:1;margin-bottom:8px}
 .home-title em{color:var(--orange);font-style:normal;display:block}
-.home-tagline{font-size:15px;color:var(--text-2);margin-bottom:40px;line-height:1.6;max-width:280px}
+.home-tagline{font-size:15px;color:var(--text-2);margin-bottom:36px;line-height:1.6;max-width:280px}
 .home-tagline strong{color:var(--text);font-weight:600}
-.home-select-wrap{width:100%;max-width:320px;margin-bottom:14px}
+.home-select-wrap{width:100%;max-width:320px;margin-bottom:12px}
 .home-select{width:100%;background:var(--navy-3);border:1.5px solid var(--border-2);color:var(--text);padding:14px 40px 14px 18px;border-radius:14px;font-family:var(--fb);font-size:16px;font-weight:500;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath fill='%238fa3b8' d='M6 8L0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;transition:border-color .2s}
 .home-select:focus{outline:none;border-color:var(--orange)}
 .home-select option{background:#162030}
 .home-hint{font-size:12px;color:var(--text-3);margin-bottom:0}
-.home-divider{width:100%;max-width:320px;display:flex;align-items:center;gap:12px;margin:24px 0;color:var(--text-3);font-size:12px}
+.home-divider{width:100%;max-width:320px;display:flex;align-items:center;gap:12px;margin:22px 0;color:var(--text-3);font-size:12px}
 .home-divider::before,.home-divider::after{content:'';flex:1;height:1px;background:var(--border)}
 .coach-login-btn{width:100%;max-width:320px;background:var(--navy-3);border:1.5px solid var(--border-2);color:var(--text-2);padding:13px 18px;border-radius:14px;font-family:var(--fb);font-size:15px;font-weight:500;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
 .coach-login-btn:hover{border-color:var(--orange);color:var(--text)}
+
+/* SYNC INDICATOR */
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:4px}
+.sync-dot.syncing{background:var(--orange);animation:pulse .8s ease-in-out infinite}
+.sync-dot.error{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
 /* ROSTER BAR */
 .roster-bar{background:var(--navy-3);padding:10px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);flex-shrink:0}
@@ -67,7 +98,7 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
 .player-select:focus{outline:none;border-color:var(--orange)}
 .player-select option{background:#162030}
 .roster-action-btn{width:36px;height:36px;border-radius:10px;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;font-weight:700;transition:all .18s;flex-shrink:0}
-.roster-action-btn.add{background:var(--orange);color:#fff;box-shadow:0 0 12px rgba(255,107,53,.3)}
+.roster-action-btn.add{background:var(--orange);color:#fff}
 .roster-action-btn.remove{background:var(--navy-4);color:var(--text-3);border:1px solid var(--border)}
 .roster-action-btn:active{transform:scale(.9)}
 
@@ -92,16 +123,12 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
 .card-title{font-family:var(--fd);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-2);display:flex;align-items:center;gap:8px}
 .card-title .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .scale-tag{font-size:10px;font-weight:600;color:var(--text-3);background:var(--border);padding:3px 8px;border-radius:20px}
-
-/* INFO */
 .info-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .info-block{background:var(--navy-3);border-radius:10px;padding:10px 12px}
 .info-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-3);margin-bottom:3px;font-weight:600}
 .info-inp{background:none;border:none;color:var(--text);font-family:var(--fb);font-size:15px;font-weight:600;width:100%;outline:none}
 .info-inp:disabled{cursor:default;opacity:.6}
 .info-inp:focus{color:var(--orange)}
-
-/* SKILLS */
 .skill-radar-wrap{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start}
 .skill-list{display:flex;flex-direction:column}
 .skill-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)}
@@ -113,12 +140,9 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
 .score-val{font-family:var(--fd);font-size:16px;font-weight:700;min-width:16px;text-align:right}
 .stepper{display:flex;align-items:center;gap:5px}
 .step-b{width:24px;height:24px;border-radius:7px;border:none;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
-.step-b.minus{background:var(--navy-4);color:var(--text-2)}
-.step-b.plus{background:var(--orange);color:#fff}
+.step-b.minus{background:var(--navy-4);color:var(--text-2)}.step-b.plus{background:var(--orange);color:#fff}
 .step-b:active{transform:scale(.88)}
 .radar-wrap{width:140px;height:140px;flex-shrink:0}
-
-/* SCHEDULE */
 .week-tabs{display:flex;background:var(--navy-3);border-radius:10px;padding:3px;margin-bottom:14px}
 .week-tab{flex:1;padding:8px;text-align:center;border-radius:8px;border:none;background:none;cursor:pointer;font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-3);transition:all .2s}
 .week-tab.active{background:var(--navy);color:var(--text);box-shadow:0 1px 6px rgba(0,0,0,.3)}
@@ -127,10 +151,7 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
 .day-hdr{font-size:9px;font-weight:700;text-align:center;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px}
 .day-slot{min-height:56px;border-radius:8px;border:1px dashed var(--border-2);background:var(--navy-3);display:flex;align-items:center;justify-content:center;font-size:9px;text-align:center;cursor:pointer;transition:all .2s;padding:4px 3px;color:var(--text-3);line-height:1.3}
 .day-slot.filled{background:var(--orange-dim);border:1px solid rgba(255,107,53,.35);color:var(--orange);font-weight:600;font-size:8.5px}
-.day-slot:active{transform:scale(.95)}
 .day-slot.locked{cursor:default}
-
-/* GOALS */
 .goals-wrap{margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
 .goals-title{font-family:var(--fd);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-2);margin-bottom:10px}
 .goal-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
@@ -145,14 +166,10 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
 .goal-txt-inp{flex:1;background:var(--navy-3);border:1px solid var(--border-2);border-radius:10px;padding:9px 12px;font-family:var(--fb);font-size:13px;color:var(--text);outline:none}
 .goal-txt-inp:focus{border-color:var(--orange)}
 .goal-add-btn{background:var(--orange);color:#fff;border:none;border-radius:10px;padding:9px 14px;font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
-
-/* COMMENTS */
 .comments-ta{width:100%;background:var(--navy-3);border:1px solid var(--border);border-radius:10px;padding:12px;font-family:var(--fb);font-size:13px;color:var(--text);resize:vertical;min-height:80px;outline:none;line-height:1.6}
 .comments-ta:focus{border-color:var(--orange)}
 .comments-ta:disabled{opacity:.5;cursor:default}
 .edit-credit{font-size:11px;color:var(--text-3);margin-top:7px}
-
-/* SETTINGS */
 .settings-card{display:none}.settings-card.open{display:block}
 .settings-row{margin-bottom:12px}
 .settings-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text-3);margin-bottom:6px}
@@ -161,8 +178,6 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
 .settings-save{background:var(--orange);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-family:var(--fb);font-size:14px;font-weight:600;cursor:pointer}
 .err-msg{font-size:12px;color:var(--red);margin:-6px 0 10px}
 .ok-msg{font-size:12px;color:var(--green);font-weight:600}
-
-/* MODALS */
 .overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
 .overlay.show{opacity:1;pointer-events:all}
 .sheet{background:var(--navy-2);border-radius:20px 20px 0 0;padding:0 20px calc(var(--sb) + 28px);width:100%;max-width:480px;max-height:90dvh;overflow-y:auto;transform:translateY(40px);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
@@ -180,25 +195,17 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
 .time-lbl{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text-3);min-width:36px}
 .time-sel{flex:1;background:var(--navy-3);border:1.5px solid var(--border-2);border-radius:12px;padding:13px 14px;font-family:var(--fb);font-size:14px;color:var(--text);outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%238fa3b8' d='M5 6L0 0h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:30px}
 .time-sel:focus{border-color:var(--orange)}
-
-/* PIN */
 .pin-wrap{display:flex;gap:12px;justify-content:center;margin:8px 0 20px}
 .pin-digit{width:54px;height:64px;background:var(--navy-3);border:2px solid var(--border-2);border-radius:14px;font-family:var(--fd);font-size:32px;font-weight:800;color:var(--text);text-align:center;outline:none;transition:border-color .2s;-webkit-text-security:disc}
 .pin-digit:focus{border-color:var(--orange)}
 .pin-digit.filled{border-color:rgba(255,107,53,.5);color:var(--orange)}
-
-/* PDF */
 .pdf-actions{display:flex;gap:10px;margin-top:16px}
 .pdf-btn{flex:1;padding:13px;border-radius:12px;border:1.5px solid var(--border-2);background:var(--navy-3);color:var(--text-2);font-family:var(--fb);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
 .pdf-btn:hover{border-color:var(--orange);color:var(--text)}
 .pdf-btn.primary{background:var(--orange);border-color:var(--orange);color:#fff;box-shadow:0 4px 20px rgba(255,107,53,.3)}
 .pdf-btn:active{transform:scale(.97)}
-
-/* SESSION TAG */
 .session-tag{display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(0,201,177,.08);border:1px solid rgba(0,201,177,.2);border-radius:10px;font-size:12px;color:var(--teal);font-weight:600}
 .session-tag .dot-pulse{width:7px;height:7px;border-radius:50%;background:var(--teal);flex-shrink:0}
-
-/* INSTALL BANNER */
 .install-banner{background:linear-gradient(135deg,var(--orange-dim),var(--teal-dim));border:1px solid rgba(255,107,53,.25);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px}
 .install-icon{font-size:24px;flex-shrink:0}
 .install-text h4{font-family:var(--fd);font-size:16px;font-weight:700;margin-bottom:2px}
@@ -212,7 +219,7 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
   body{background:#fff!important;color:#111!important;font-family:'DM Sans',Arial,sans-serif;font-size:12px;margin:0}
   #app>*:not(#printReport){display:none!important}
   #printReport{display:block!important}
-  .pr-page{page-break-after:always;padding:32px 36px;max-width:100%}
+  .pr-page{page-break-after:always;padding:32px 36px}
   .pr-page:last-child{page-break-after:avoid}
   .pr-hdr{display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #FF6B35;padding-bottom:14px;margin-bottom:22px}
   .pr-logo{display:flex;align-items:center;gap:10px}
@@ -260,9 +267,34 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
 <body>
 <div id="app">
 
+  <!-- LOADING -->
+  <div id="loadingScreen">
+    <img src="icons/icon-192.png" style="width:60px;height:60px;border-radius:14px;object-fit:cover;margin-bottom:8px" alt="HoopTrack"/>
+    <div class="spinner"></div>
+    <div class="loading-txt" id="loadingTxt">Loading HoopTrack…</div>
+  </div>
+
+  <!-- OFFLINE BANNER -->
+  <div id="offlineBanner">⚠ You're offline — changes will sync when you reconnect</div>
+
+  <!-- SETUP SCREEN (first time only) -->
+  <div id="setupScreen">
+    <img class="setup-logo" src="icons/icon-512.png" alt="HoopTrack"/>
+    <div class="setup-title">Hoop<em>Track</em></div>
+    <div class="setup-sub">One quick setup step to connect to the shared database so all devices stay in sync.</div>
+    <div class="setup-step" style="max-width:360px;width:100%">
+      <div class="setup-step-num">Your Google Apps Script URL</div>
+      <div class="setup-step-txt">Paste the Web App URL you got after deploying the script.</div>
+    </div>
+    <input class="setup-inp" type="url" id="setupUrlInp" placeholder="https://script.google.com/macros/s/…/exec"/>
+    <div class="setup-err" id="setupErr">Could not connect. Check the URL and try again.</div>
+    <div class="setup-hint">This only needs to be done once per device. You'll find the URL in Google Apps Script under Deploy → Manage Deployments.</div>
+    <button class="setup-btn" onclick="connectToScript()">Connect &amp; continue</button>
+  </div>
+
   <!-- HOME SCREEN -->
   <div id="homeScreen">
-    <img class="home-logo-img" src="icons/icon-512.png" alt="Coach Will HoopTrack" />
+    <img class="home-logo-img" src="icons/icon-512.png" alt="Coach Will HoopTrack"/>
     <div class="home-title">Hoop<em>Track</em></div>
     <div class="home-tagline"><strong>Be kind to yourself.</strong><br/>Select your name to view your progress, or log in as a coach.</div>
     <div class="home-select-wrap">
@@ -279,17 +311,17 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
   <div id="mainApp" style="display:none;flex-direction:column;height:100dvh;overflow:hidden">
     <div class="hdr">
       <div class="hdr-logo">
-        <img class="logo-img" src="icons/icon-192.png" alt="HoopTrack" />
+        <img class="logo-img" src="icons/icon-192.png" alt="HoopTrack"/>
         <div class="logo-txt">Hoop<em>Track</em></div>
       </div>
       <div class="hdr-actions">
+        <span id="syncIndicator" title="Sync status" style="display:flex;align-items:center;font-size:11px;color:var(--text-3)"><span class="sync-dot" id="syncDot"></span><span id="syncTxt">Synced</span></span>
         <button class="icon-btn" onclick="openPDFSheet()" title="Export report">📄</button>
         <button class="icon-btn" id="settingsBtn" onclick="toggleSettings()" title="Settings">⚙</button>
         <button class="icon-btn" id="coachModeBtn" onclick="toggleCoachMode()" title="Toggle coach editing" style="display:none">🔒</button>
         <button class="icon-btn" onclick="logout()" title="Log out">↩</button>
       </div>
     </div>
-
     <div class="roster-bar" id="rosterBar" style="display:none">
       <div class="player-select-wrap">
         <select class="player-select" id="playerSelect" onchange="switchPlayer(this.value)"></select>
@@ -297,7 +329,6 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
       <button class="roster-action-btn add" onclick="openAddPlayer()">+</button>
       <button class="roster-action-btn remove" onclick="removePlayer()">✕</button>
     </div>
-
     <div class="scroll-content">
       <div class="install-banner" id="installBanner" style="display:none">
         <span class="install-icon">📲</span>
@@ -320,9 +351,9 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
       <div class="card">
         <div class="card-hdr"><div class="card-title"><span class="dot" style="background:var(--orange)"></span>Player info</div></div>
         <div class="info-row">
-          <div class="info-block"><div class="info-lbl">Age</div><input class="info-inp" id="fAge" type="text" placeholder="—" disabled /></div>
-          <div class="info-block"><div class="info-lbl">Height</div><input class="info-inp" id="fHeight" type="text" placeholder="—" disabled /></div>
-          <div class="info-block"><div class="info-lbl">Weight</div><input class="info-inp" id="fWeight" type="text" placeholder="—" disabled /></div>
+          <div class="info-block"><div class="info-lbl">Age</div><input class="info-inp" id="fAge" type="text" placeholder="—" disabled/></div>
+          <div class="info-block"><div class="info-lbl">Height</div><input class="info-inp" id="fHeight" type="text" placeholder="—" disabled/></div>
+          <div class="info-block"><div class="info-lbl">Weight</div><input class="info-inp" id="fWeight" type="text" placeholder="—" disabled/></div>
         </div>
       </div>
       <div class="card">
@@ -348,7 +379,7 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
           <div class="goals-title">Goals</div>
           <div id="goalList"></div>
           <div class="goal-add-row" id="goalAddRow" style="display:none">
-            <input class="goal-txt-inp" id="goalInput" placeholder="Add a new goal…" />
+            <input class="goal-txt-inp" id="goalInput" placeholder="Add a new goal…"/>
             <button class="goal-add-btn" onclick="addGoal()">Add</button>
           </div>
         </div>
@@ -370,10 +401,10 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
     <div class="sheet-title" id="playerPinTitle">Enter your PIN</div>
     <div class="sheet-sub">Enter your 4-digit PIN to access your profile.</div>
     <div class="pin-wrap">
-      <input class="pin-digit" id="pin0" type="number" min="0" max="9" inputmode="numeric" />
-      <input class="pin-digit" id="pin1" type="number" min="0" max="9" inputmode="numeric" />
-      <input class="pin-digit" id="pin2" type="number" min="0" max="9" inputmode="numeric" />
-      <input class="pin-digit" id="pin3" type="number" min="0" max="9" inputmode="numeric" />
+      <input class="pin-digit" id="pin0" type="number" min="0" max="9" inputmode="numeric"/>
+      <input class="pin-digit" id="pin1" type="number" min="0" max="9" inputmode="numeric"/>
+      <input class="pin-digit" id="pin2" type="number" min="0" max="9" inputmode="numeric"/>
+      <input class="pin-digit" id="pin3" type="number" min="0" max="9" inputmode="numeric"/>
     </div>
     <div class="sheet-err" id="playerPinErr">Incorrect PIN. Please try again.</div>
     <div class="sheet-actions">
@@ -388,20 +419,20 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title">Change your PIN</div>
-    <div class="sheet-sub" id="changePinSub">Choose a new 4-digit PIN to secure your profile.</div>
+    <div class="sheet-sub" id="changePinSub">Choose a new 4-digit PIN.</div>
     <div style="margin-bottom:10px;font-size:12px;color:var(--text-3)">New PIN</div>
     <div class="pin-wrap">
-      <input class="pin-digit" id="npin0" type="number" min="0" max="9" inputmode="numeric" />
-      <input class="pin-digit" id="npin1" type="number" min="0" max="9" inputmode="numeric" />
-      <input class="pin-digit" id="npin2" type="number" min="0" max="9" inputmode="numeric" />
-      <input class="pin-digit" id="npin3" type="number" min="0" max="9" inputmode="numeric" />
+      <input class="pin-digit" id="npin0" type="number" min="0" max="9" inputmode="numeric"/>
+      <input class="pin-digit" id="npin1" type="number" min="0" max="9" inputmode="numeric"/>
+      <input class="pin-digit" id="npin2" type="number" min="0" max="9" inputmode="numeric"/>
+      <input class="pin-digit" id="npin3" type="number" min="0" max="9" inputmode="numeric"/>
     </div>
     <div style="margin-bottom:10px;font-size:12px;color:var(--text-3)">Confirm new PIN</div>
     <div class="pin-wrap">
-      <input class="pin-digit" id="cpin0" type="number" min="0" max="9" inputmode="numeric" />
-      <input class="pin-digit" id="cpin1" type="number" min="0" max="9" inputmode="numeric" />
-      <input class="pin-digit" id="cpin2" type="number" min="0" max="9" inputmode="numeric" />
-      <input class="pin-digit" id="cpin3" type="number" min="0" max="9" inputmode="numeric" />
+      <input class="pin-digit" id="cpin0" type="number" min="0" max="9" inputmode="numeric"/>
+      <input class="pin-digit" id="cpin1" type="number" min="0" max="9" inputmode="numeric"/>
+      <input class="pin-digit" id="cpin2" type="number" min="0" max="9" inputmode="numeric"/>
+      <input class="pin-digit" id="cpin3" type="number" min="0" max="9" inputmode="numeric"/>
     </div>
     <div class="sheet-err" id="changePinErr"></div>
     <div class="sheet-actions">
@@ -417,8 +448,8 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
     <div class="sheet-handle"></div>
     <div class="sheet-title">Coach login</div>
     <div class="sheet-sub">Enter your name and the shared coach password.</div>
-    <input class="sheet-inp" type="text" id="coachNameInp" placeholder="Your name (e.g. Coach Will)" autocomplete="name" />
-    <input class="sheet-inp" type="password" id="coachPassInp" placeholder="Password" />
+    <input class="sheet-inp" type="text" id="coachNameInp" placeholder="Your name (e.g. Coach Will)" autocomplete="name"/>
+    <input class="sheet-inp" type="password" id="coachPassInp" placeholder="Password"/>
     <div class="sheet-err" id="coachErr"></div>
     <div class="sheet-actions">
       <button class="sheet-cancel" onclick="closeOverlay('coachOverlay')">Cancel</button>
@@ -433,10 +464,10 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
     <div class="sheet-handle"></div>
     <div class="sheet-title">Add player</div>
     <div class="sheet-sub">Their PIN will be set to 0000 — they'll be prompted to change it on first login.</div>
-    <input class="sheet-inp" type="text" id="newName" placeholder="Player name" />
-    <input class="sheet-inp" type="text" id="newAge" placeholder="Age" />
-    <input class="sheet-inp" type="text" id="newHeight" placeholder="Height (e.g. 5'8&quot;)" />
-    <input class="sheet-inp" type="text" id="newWeight" placeholder="Weight (e.g. 140 lbs)" />
+    <input class="sheet-inp" type="text" id="newName" placeholder="Player name"/>
+    <input class="sheet-inp" type="text" id="newAge" placeholder="Age"/>
+    <input class="sheet-inp" type="text" id="newHeight" placeholder="Height (e.g. 5'8&quot;)"/>
+    <input class="sheet-inp" type="text" id="newWeight" placeholder="Weight (e.g. 140 lbs)"/>
     <div class="sheet-actions">
       <button class="sheet-cancel" onclick="closeOverlay('addOverlay')">Cancel</button>
       <button class="sheet-confirm" onclick="confirmAdd()">Add player</button>
@@ -450,7 +481,7 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="slotTitle">Edit session</div>
     <div class="sheet-sub">Set the event type and times.</div>
-    <input class="sheet-inp" type="text" id="slotType" placeholder="Event (e.g. Training, Game, Rest)" />
+    <input class="sheet-inp" type="text" id="slotType" placeholder="Event (e.g. Training, Game, Rest)"/>
     <div class="time-row-group"><span class="time-lbl">Start</span><select class="time-sel" id="slotStart"></select></div>
     <div class="time-row-group"><span class="time-lbl">End</span><select class="time-sel" id="slotEnd"></select></div>
     <div class="sheet-actions">
@@ -460,7 +491,7 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
   </div>
 </div>
 
-<!-- PDF OPTIONS -->
+<!-- PDF -->
 <div class="overlay" id="pdfOverlay">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -469,7 +500,7 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
     <div class="pdf-actions"><button class="pdf-btn primary" onclick="doPrint()">🖨 Print / Save PDF</button></div>
     <div class="pdf-actions" style="margin-top:10px"><button class="pdf-btn" onclick="openEmailSheet()">✉️ Send via email</button></div>
     <div style="margin-top:16px;font-size:12px;color:var(--text-3);line-height:1.6">
-      <strong style="color:var(--text-2)">Print / Save PDF</strong> — opens your device's print dialog. Choose "Save as PDF" to download.<br/><br/>
+      <strong style="color:var(--text-2)">Print / Save PDF</strong> — opens your device's print dialog.<br/><br/>
       <strong style="color:var(--text-2)">Send via email</strong> — opens your email app with the report pre-filled.
     </div>
     <div class="sheet-actions" style="margin-top:20px"><button class="sheet-cancel" onclick="closeOverlay('pdfOverlay')">Close</button></div>
@@ -481,8 +512,8 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title">Send via email</div>
-    <div class="sheet-sub">Enter the recipient's email. Your email app will open with the report pre-filled.</div>
-    <input class="sheet-inp" type="email" id="emailTo" placeholder="Recipient email address" inputmode="email" />
+    <div class="sheet-sub">Enter the recipient's email address.</div>
+    <input class="sheet-inp" type="email" id="emailTo" placeholder="Recipient email address" inputmode="email"/>
     <div class="sheet-err" id="emailErr">Please enter a valid email address.</div>
     <div class="sheet-actions">
       <button class="sheet-cancel" onclick="closeOverlay('emailOverlay')">Cancel</button>
@@ -492,104 +523,618 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:var(-
 </div>
 
 <script>
-const SK='hooptrack_v2';
-const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-const DS={cog:{Running:0,Jumping:0,Stopping:0,Pivot:0,Footwork:0},phys:{Endurance:0,Strength:0,'M. Endurance':0,'M. Strength':0,Composure:0,Focus:0,'Off. Awareness':0,'Def. Awareness':0},bball:{Shooting:0,Passing:0,Dribbling:0,'Off. Reb.':0,'Def. Reb.':0,Cutting:0,Flashing:0,Replacing:0,Screening:0,'Roll/Pop':0}};
-const IP=['Advay','Atom','Henry','Joey','Leo','Lewis','Luigi','Michael','Owen','Raul','Zac'];
-let state=loadState(),session={type:null,name:null},coachEdit=false,curP=null,curW='odd',editSlot=null,pendingP=null,settingsOpen=false,charts={},deferredInstall=null;
+// ═══ CONFIG ═══════════════════════════════════════════════
+const LOCAL_KEY   = 'hooptrack_script_url';
+const LOCAL_CACHE = 'hooptrack_cache_v3';
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const DS = {
+  cog:   {Running:0,Jumping:0,Stopping:0,Pivot:0,Footwork:0},
+  phys:  {Endurance:0,Strength:0,'M. Endurance':0,'M. Strength':0,Composure:0,Focus:0,'Off. Awareness':0,'Def. Awareness':0},
+  bball: {Shooting:0,Passing:0,Dribbling:0,'Off. Reb.':0,'Def. Reb.':0,Cutting:0,Flashing:0,Replacing:0,Screening:0,'Roll/Pop':0}
+};
 
-function newP(n,ex={}){return{name:n,age:ex.age||'',height:ex.height||'',weight:ex.weight||'',pin:'0000',firstLogin:true,scores:JSON.parse(JSON.stringify(DS)),schedule:{odd:{},even:{}},goals:[],comments:'',lastCoach:'',lastUpdated:''};}
-function loadState(){try{const r=localStorage.getItem(SK);if(r)return JSON.parse(r);}catch(e){}const pl={};IP.forEach(n=>pl[n]=newP(n));return{players:pl,coachPassword:'coach123'};}
-function save(){try{localStorage.setItem(SK,JSON.stringify(state));}catch(e){}}
+// ═══ STATE ════════════════════════════════════════════════
+let SCRIPT_URL = localStorage.getItem(LOCAL_KEY) || '';
+let cache = loadCache(); // { players: {name: playerObj}, coachPassword, roster: [] }
+let session = {type:null,name:null};
+let coachEdit = false;
+let curP = null, curW = 'odd', editSlot = null;
+let pendingP = null, settingsOpen = false;
+let charts = {}, deferredInstall = null;
+let saveTimer = null;
 
-const TO=(()=>{const o=[];for(let h=0;h<24;h++)for(let m=0;m<60;m+=15){const h12=h%12===0?12:h%12,ap=h<12?'AM':'PM',mm=m===0?'00':m;o.push(`${h12}:${mm} ${ap}`);}return o;})();
-function fillTS(){['slotStart','slotEnd'].forEach(id=>{document.getElementById(id).innerHTML=TO.map(t=>`<option value="${t}">${t}</option>`).join('');});}
+// ═══ CACHE ════════════════════════════════════════════════
+function loadCache(){
+  try{const r=localStorage.getItem(LOCAL_CACHE);if(r)return JSON.parse(r);}catch(e){}
+  return {players:{},coachPassword:'coach123',roster:[]};
+}
+function persistCache(){try{localStorage.setItem(LOCAL_CACHE,JSON.stringify(cache));}catch(e){}}
 
-function ini(n){const p=n.trim().split(' ');return p.length>1?(p[0][0]+p[1][0]).toUpperCase():n.slice(0,2).toUpperCase();}
-function getP(px){return[0,1,2,3].map(i=>(document.getElementById(px+i).value||'').slice(-1)).join('');}
-function clrP(px){[0,1,2,3].forEach(i=>{const e=document.getElementById(px+i);if(e){e.value='';e.classList.remove('filled');}});}
-function setupPA(px){[0,1,2,3].forEach(i=>{const e=document.getElementById(px+i);if(!e)return;e.addEventListener('input',function(){const v=this.value.replace(/\D/g,'').slice(-1);this.value=v;this.classList.toggle('filled',v!=='');if(v&&i<3)document.getElementById(px+(i+1)).focus();});e.addEventListener('keydown',function(ev){if(ev.key==='Backspace'&&!this.value&&i>0)document.getElementById(px+(i-1)).focus();});});}
+// ═══ API ══════════════════════════════════════════════════
+function setSyncState(state){
+  const dot=document.getElementById('syncDot');
+  const txt=document.getElementById('syncTxt');
+  if(!dot)return;
+  dot.className='sync-dot'+(state==='syncing'?' syncing':state==='error'?' error':'');
+  txt.textContent=state==='syncing'?'Saving…':state==='error'?'Offline':state==='offline'?'Offline':'Synced';
+}
 
-function popHome(){const s=document.getElementById('homePlayerSelect');s.innerHTML='<option value="">— Select your name —</option>'+Object.keys(state.players).map(n=>`<option value="${n}">${n}</option>`).join('');s.value='';}
-function onHomeSelect(n){if(!n)return;pendingP=n;document.getElementById('playerPinTitle').textContent=`Hi ${n}! Enter your PIN`;clrP('pin');document.getElementById('playerPinErr').style.display='none';openOverlay('playerPinOverlay');setTimeout(()=>document.getElementById('pin0').focus(),400);document.getElementById('homePlayerSelect').value='';}
-function cancelPlayerLogin(){pendingP=null;closeOverlay('playerPinOverlay');}
-function confirmPlayerPin(){const pin=getP('pin'),p=state.players[pendingP];if(!p)return;if(pin!==p.pin){document.getElementById('playerPinErr').style.display='block';clrP('pin');setTimeout(()=>document.getElementById('pin0').focus(),100);return;}closeOverlay('playerPinOverlay');session={type:'player',name:pendingP};pendingP=null;if(p.firstLogin){document.getElementById('changePinSub').textContent='Your PIN is 0000. Please choose a new PIN to secure your profile.';document.getElementById('changePinCancel').style.display='inline-flex';clrP('npin');clrP('cpin');document.getElementById('changePinErr').style.display='none';openOverlay('changePinOverlay');setTimeout(()=>document.getElementById('npin0').focus(),400);}else{enterApp();}}
-function confirmChangePin(){const np=getP('npin'),cp=getP('cpin'),err=document.getElementById('changePinErr');if(np.length<4||!/^\d{4}$/.test(np)){err.textContent='Please enter all 4 digits.';err.style.display='block';return;}if(np==='0000'){err.textContent='Please choose a PIN other than 0000.';err.style.display='block';return;}if(np!==cp){err.textContent='PINs do not match.';err.style.display='block';return;}state.players[session.name].pin=np;state.players[session.name].firstLogin=false;save();closeOverlay('changePinOverlay');enterApp();}
-function openCoachLogin(){document.getElementById('coachErr').style.display='none';document.getElementById('coachNameInp').value='';document.getElementById('coachPassInp').value='';openOverlay('coachOverlay');}
-function confirmCoachLogin(){const name=document.getElementById('coachNameInp').value.trim(),pass=document.getElementById('coachPassInp').value,err=document.getElementById('coachErr');if(!name){err.textContent='Please enter your name.';err.style.display='block';return;}if(pass!==state.coachPassword){err.textContent='Incorrect password.';err.style.display='block';return;}session={type:'coach',name};closeOverlay('coachOverlay');coachEdit=true;enterApp();}
+async function api(params){
+  if(!SCRIPT_URL) return {error:'No URL'};
+  try{
+    const url=SCRIPT_URL+'?'+new URLSearchParams(params);
+    const res=await fetch(url,{redirect:'follow'});
+    const json=await res.json();
+    return json;
+  }catch(e){
+    return{error:e.toString()};
+  }
+}
 
-function enterApp(){document.getElementById('homeScreen').style.display='none';const ma=document.getElementById('mainApp');ma.style.display='flex';if(session.type==='coach'){document.getElementById('sessionTagTxt').textContent=`Coach mode — ${session.name}`;document.getElementById('rosterBar').style.display='flex';document.getElementById('coachModeBtn').style.display='flex';coachEdit=true;popRoster();curP=Object.keys(state.players)[0];document.getElementById('playerSelect').value=curP;}else{document.getElementById('sessionTagTxt').textContent=`Logged in as ${session.name}`;document.getElementById('rosterBar').style.display='none';document.getElementById('coachModeBtn').style.display='none';coachEdit=false;curP=session.name;}buildSettings();loadPlayer(curP);}
-function logout(){session={type:null,name:null};coachEdit=false;curP=null;curW='odd';settingsOpen=false;document.getElementById('settingsPanel').classList.remove('open');document.getElementById('settingsBtn').classList.remove('active');document.getElementById('mainApp').style.display='none';document.getElementById('homeScreen').style.display='flex';popHome();}
+async function apiPost(body){
+  if(!SCRIPT_URL) return{error:'No URL'};
+  try{
+    const res=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),redirect:'follow'});
+    const json=await res.json();
+    return json;
+  }catch(e){
+    return{error:e.toString()};
+  }
+}
 
-function popRoster(){const s=document.getElementById('playerSelect');s.innerHTML=Object.keys(state.players).map(n=>`<option value="${n}">${n}</option>`).join('');}
-function switchPlayer(n){curP=n;curW='odd';document.querySelectorAll('.week-tab').forEach((t,i)=>t.classList.toggle('active',i===0));loadPlayer(n);}
-function loadPlayer(name){curP=name;const p=state.players[name];document.getElementById('heroAvatar').textContent=ini(name);document.getElementById('heroName').textContent=name;document.getElementById('heroMeta').textContent=p.lastUpdated?`Updated ${p.lastUpdated} · ${p.lastCoach}`:'No updates yet';document.getElementById('fAge').value=p.age;document.getElementById('fHeight').value=p.height;document.getElementById('fWeight').value=p.weight;document.getElementById('commentsTa').value=p.comments;document.getElementById('editCredit').textContent=p.lastCoach?`Last edited by ${p.lastCoach}`:'';applyLock();renderSkills();renderSched();renderGoals();}
+// ═══ BOOT ═════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', async () => {
+  setupAllPins();
+  fillTS();
+
+  if(!SCRIPT_URL){
+    // First time — show setup screen
+    show('loadingScreen',false);
+    show('setupScreen',true,'flex');
+    return;
+  }
+  await bootApp();
+});
+
+async function bootApp(){
+  show('loadingScreen',true,'flex');
+  setLoadingTxt('Connecting to database…');
+
+  // Load settings (coach password)
+  const settings = await api({action:'getSettings'});
+  if(settings.ok){
+    cache.coachPassword = settings.coachPassword;
+    persistCache();
+  }
+
+  // Load roster
+  setLoadingTxt('Loading roster…');
+  const roster = await api({action:'getRoster'});
+  if(roster.ok){
+    cache.roster = roster.roster;
+    persistCache();
+  } else {
+    // Offline — use cached roster
+    showOffline(true);
+  }
+
+  show('loadingScreen',false);
+  showHomeScreen();
+}
+
+async function connectToScript(){
+  const url = document.getElementById('setupUrlInp').value.trim();
+  const err = document.getElementById('setupErr');
+  err.style.display='none';
+  if(!url || !url.includes('script.google.com')){
+    err.textContent='Please paste a valid Google Apps Script URL.';
+    err.style.display='block';
+    return;
+  }
+  setLoadingTxt('Testing connection…');
+  show('setupScreen',false);
+  show('loadingScreen',true,'flex');
+  SCRIPT_URL = url;
+  localStorage.setItem(LOCAL_KEY, url);
+  const test = await api({action:'ping'});
+  if(!test.ok){
+    show('loadingScreen',false);
+    show('setupScreen',true,'flex');
+    err.textContent='Could not connect. Double-check the URL and make sure the script is deployed as "Anyone" can access.';
+    err.style.display='block';
+    SCRIPT_URL='';
+    localStorage.removeItem(LOCAL_KEY);
+    return;
+  }
+  await bootApp();
+}
+
+function setLoadingTxt(t){const el=document.getElementById('loadingTxt');if(el)el.textContent=t;}
+function showOffline(v){document.getElementById('offlineBanner').style.display=v?'block':'none';}
+function show(id,visible,displayType='block'){document.getElementById(id).style.display=visible?displayType:'none';}
+
+// ═══ HOME SCREEN ══════════════════════════════════════════
+function showHomeScreen(){
+  show('homeScreen',true,'flex');
+  popHome();
+}
+
+function popHome(){
+  const sel=document.getElementById('homePlayerSelect');
+  sel.innerHTML='<option value="">— Select your name —</option>'+
+    (cache.roster||[]).map(n=>`<option value="${n}">${n}</option>`).join('');
+  sel.value='';
+}
+
+async function onHomeSelect(n){
+  if(!n)return;
+  pendingP=n;
+  setLoadingTxt('Loading player…');
+  // Fetch player data
+  show('homeScreen',false);
+  show('loadingScreen',true,'flex');
+  const res = await api({action:'getPlayer',name:n});
+  show('loadingScreen',false);
+  if(res.ok){
+    cache.players[n] = res.player;
+    persistCache();
+  } else if(cache.players[n]){
+    showOffline(true);
+  } else {
+    showToast('Could not load player data. Check your connection.');
+    show('homeScreen',true,'flex');
+    document.getElementById('homePlayerSelect').value='';
+    return;
+  }
+  // Show PIN prompt
+  document.getElementById('playerPinTitle').textContent=`Hi ${n}! Enter your PIN`;
+  clrP('pin');
+  document.getElementById('playerPinErr').style.display='none';
+  openOverlay('playerPinOverlay');
+  setTimeout(()=>document.getElementById('pin0').focus(),400);
+  document.getElementById('homePlayerSelect').value='';
+}
+
+function cancelPlayerLogin(){
+  pendingP=null;
+  closeOverlay('playerPinOverlay');
+  show('homeScreen',true,'flex');
+}
+
+function confirmPlayerPin(){
+  const pin=getP('pin'),p=cache.players[pendingP];
+  if(!p)return;
+  if(pin!==p.pin){
+    document.getElementById('playerPinErr').style.display='block';
+    clrP('pin');
+    setTimeout(()=>document.getElementById('pin0').focus(),100);
+    return;
+  }
+  closeOverlay('playerPinOverlay');
+  session={type:'player',name:pendingP};
+  pendingP=null;
+  if(p.firstLogin){
+    document.getElementById('changePinSub').textContent='Your PIN is 0000. Please choose a new PIN to secure your profile.';
+    document.getElementById('changePinCancel').style.display='inline-flex';
+    clrP('npin');clrP('cpin');
+    document.getElementById('changePinErr').style.display='none';
+    openOverlay('changePinOverlay');
+    setTimeout(()=>document.getElementById('npin0').focus(),400);
+  }else{enterApp();}
+}
+
+async function confirmChangePin(){
+  const np=getP('npin'),cp=getP('cpin'),err=document.getElementById('changePinErr');
+  if(np.length<4||!/^\d{4}$/.test(np)){err.textContent='Please enter all 4 digits.';err.style.display='block';return;}
+  if(np==='0000'){err.textContent='Please choose a PIN other than 0000.';err.style.display='block';return;}
+  if(np!==cp){err.textContent='PINs do not match.';err.style.display='block';return;}
+  cache.players[session.name].pin=np;
+  cache.players[session.name].firstLogin=false;
+  persistCache();
+  closeOverlay('changePinOverlay');
+  scheduleSave(session.name);
+  enterApp();
+}
+
+function openCoachLogin(){
+  document.getElementById('coachErr').style.display='none';
+  document.getElementById('coachNameInp').value='';
+  document.getElementById('coachPassInp').value='';
+  openOverlay('coachOverlay');
+}
+
+function confirmCoachLogin(){
+  const name=document.getElementById('coachNameInp').value.trim();
+  const pass=document.getElementById('coachPassInp').value;
+  const err=document.getElementById('coachErr');
+  if(!name){err.textContent='Please enter your name.';err.style.display='block';return;}
+  if(pass!==cache.coachPassword){err.textContent='Incorrect password.';err.style.display='block';return;}
+  session={type:'coach',name};
+  closeOverlay('coachOverlay');
+  coachEdit=true;
+  enterApp();
+}
+
+// ═══ ENTER APP ════════════════════════════════════════════
+function enterApp(){
+  show('homeScreen',false);
+  const ma=document.getElementById('mainApp');
+  ma.style.display='flex';
+  if(session.type==='coach'){
+    document.getElementById('sessionTagTxt').textContent=`Coach mode — ${session.name}`;
+    document.getElementById('rosterBar').style.display='flex';
+    document.getElementById('coachModeBtn').style.display='flex';
+    coachEdit=true;
+    popRoster();
+    curP=(cache.roster&&cache.roster[0])||Object.keys(cache.players)[0];
+    document.getElementById('playerSelect').value=curP;
+  }else{
+    document.getElementById('sessionTagTxt').textContent=`Logged in as ${session.name}`;
+    document.getElementById('rosterBar').style.display='none';
+    document.getElementById('coachModeBtn').style.display='none';
+    coachEdit=false;
+    curP=session.name;
+  }
+  buildSettings();
+  loadPlayer(curP);
+}
+
+function logout(){
+  session={type:null,name:null};coachEdit=false;curP=null;curW='odd';settingsOpen=false;
+  document.getElementById('settingsPanel').classList.remove('open');
+  document.getElementById('settingsBtn').classList.remove('active');
+  document.getElementById('mainApp').style.display='none';
+  show('homeScreen',true,'flex');
+  popHome();
+}
+
+// ═══ ROSTER (coach view) ══════════════════════════════════
+function popRoster(){
+  const s=document.getElementById('playerSelect');
+  s.innerHTML=(cache.roster||[]).map(n=>`<option value="${n}">${n}</option>`).join('');
+}
+
+async function switchPlayer(n){
+  curP=n;curW='odd';
+  document.querySelectorAll('.week-tab').forEach((t,i)=>t.classList.toggle('active',i===0));
+  // Refresh from server
+  const res=await api({action:'getPlayer',name:n});
+  if(res.ok){cache.players[n]=res.player;persistCache();}
+  loadPlayer(n);
+}
+
+// ═══ LOAD PLAYER ══════════════════════════════════════════
+function loadPlayer(name){
+  curP=name;
+  const p=cache.players[name];
+  if(!p)return;
+  document.getElementById('heroAvatar').textContent=ini(name);
+  document.getElementById('heroName').textContent=name;
+  document.getElementById('heroMeta').textContent=p.lastUpdated?`Updated ${p.lastUpdated} · ${p.lastCoach}`:'No updates yet';
+  document.getElementById('fAge').value=p.age||'';
+  document.getElementById('fHeight').value=p.height||'';
+  document.getElementById('fWeight').value=p.weight||'';
+  document.getElementById('commentsTa').value=p.comments||'';
+  document.getElementById('editCredit').textContent=p.lastCoach?`Last edited by ${p.lastCoach}`:'';
+  applyLock();renderSkills();renderSched();renderGoals();
+}
+
+// ═══ SAVE (debounced) ════════════════════════════════════
+function scheduleSave(name){
+  clearTimeout(saveTimer);
+  setSyncState('syncing');
+  saveTimer=setTimeout(()=>flushSave(name),1500);
+}
+
+async function flushSave(name){
+  const p=cache.players[name];
+  if(!p)return;
+  const res=await apiPost({action:'savePlayer',player:p});
+  setSyncState(res.ok?'synced':'error');
+  if(!res.ok) showOffline(true);
+  else showOffline(false);
+}
+
+// ═══ MARK UPDATED ════════════════════════════════════════
+function markU(){
+  const d=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  const who=session.type==='coach'?session.name:curP;
+  cache.players[curP].lastUpdated=d;
+  cache.players[curP].lastCoach=who;
+  document.getElementById('heroMeta').textContent=`Updated ${d} · ${who}`;
+  document.getElementById('editCredit').textContent=`Last edited by ${who}`;
+  persistCache();
+  scheduleSave(curP);
+}
+
+// ═══ LOCK ═════════════════════════════════════════════════
 function canEdit(){return coachEdit;}
-function applyLock(){const e=canEdit();['fAge','fHeight','fWeight','commentsTa'].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=!e;});document.getElementById('goalAddRow').style.display=e?'flex':'none';}
-function toggleCoachMode(){coachEdit=!coachEdit;document.getElementById('coachModeBtn').textContent=coachEdit?'🔓':'🔒';document.getElementById('coachModeBtn').classList.toggle('active',coachEdit);applyLock();renderSkills();renderSched();renderGoals();}
+function applyLock(){
+  const e=canEdit();
+  ['fAge','fHeight','fWeight','commentsTa'].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=!e;});
+  document.getElementById('goalAddRow').style.display=e?'flex':'none';
+}
+function toggleCoachMode(){
+  coachEdit=!coachEdit;
+  document.getElementById('coachModeBtn').textContent=coachEdit?'🔓':'🔒';
+  document.getElementById('coachModeBtn').classList.toggle('active',coachEdit);
+  applyLock();renderSkills();renderSched();renderGoals();
+}
 
-function renderSkills(){const p=state.players[curP];rGrp('cogList','cogRadar',p.scores.cog,'cog','#FF6B35');rGrp('physList','physRadar',p.scores.phys,'phys','#00C9B1');rGrp('bballList','bballRadar',p.scores.bball,'bball','#9B72CF');}
-function rGrp(lid,cid,scores,grp,hex){document.getElementById(lid).innerHTML=Object.entries(scores).map(([s,v])=>`<div class="skill-row"><span class="skill-name-txt">${s}</span><div class="skill-right">${canEdit()?`<div class="stepper"><button class="step-b minus" onclick="chS('${grp}','${s}',-1)">−</button><span class="score-val" style="color:${hex};min-width:20px;text-align:center">${v}</span><button class="step-b plus" style="background:${hex}" onclick="chS('${grp}','${s}',1)">+</button></div>`:`<div class="dots-wrap">${[1,2,3,4,5].map(i=>`<div class="dot-pip" style="${i<=v?'background:'+hex:''}"></div>`).join('')}</div><span class="score-val" style="color:${hex}">${v||'—'}</span>`}</div></div>`).join('');dR(cid,scores,hex);}
-function chS(g,s,d){const p=state.players[curP];p.scores[g][s]=Math.max(0,Math.min(5,p.scores[g][s]+d));markU();renderSkills();}
-function dR(id,scores,hex){const c=document.getElementById(id);if(!c)return;if(charts[id]){charts[id].destroy();delete charts[id];}charts[id]=new Chart(c,{type:'radar',data:{labels:Object.keys(scores),datasets:[{data:Object.values(scores),backgroundColor:hex+'22',borderColor:hex,borderWidth:2,pointBackgroundColor:hex,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{r:{min:0,max:5,ticks:{display:false},grid:{color:'rgba(255,255,255,0.06)'},angleLines:{color:'rgba(255,255,255,0.06)'},pointLabels:{font:{size:7.5,family:"'DM Sans',sans-serif",weight:'600'},color:'#4d6070'}}}}});}
+// ═══ SKILLS ═══════════════════════════════════════════════
+function renderSkills(){
+  const p=cache.players[curP];if(!p)return;
+  rGrp('cogList','cogRadar',p.scores.cog,'cog','#FF6B35');
+  rGrp('physList','physRadar',p.scores.phys,'phys','#00C9B1');
+  rGrp('bballList','bballRadar',p.scores.bball,'bball','#9B72CF');
+}
+function rGrp(lid,cid,scores,grp,hex){
+  document.getElementById(lid).innerHTML=Object.entries(scores).map(([s,v])=>`
+    <div class="skill-row"><span class="skill-name-txt">${s}</span><div class="skill-right">
+    ${canEdit()?`<div class="stepper"><button class="step-b minus" onclick="chS('${grp}','${s}',-1)">−</button><span class="score-val" style="color:${hex};min-width:20px;text-align:center">${v}</span><button class="step-b plus" style="background:${hex}" onclick="chS('${grp}','${s}',1)">+</button></div>`
+    :`<div class="dots-wrap">${[1,2,3,4,5].map(i=>`<div class="dot-pip" style="${i<=v?'background:'+hex:''}"></div>`).join('')}</div><span class="score-val" style="color:${hex}">${v||'—'}</span>`}
+    </div></div>`).join('');
+  dR(cid,scores,hex);
+}
+function chS(g,s,d){const p=cache.players[curP];p.scores[g][s]=Math.max(0,Math.min(5,p.scores[g][s]+d));markU();renderSkills();}
+function dR(id,scores,hex){
+  const c=document.getElementById(id);if(!c)return;
+  if(charts[id]){charts[id].destroy();delete charts[id];}
+  charts[id]=new Chart(c,{type:'radar',data:{labels:Object.keys(scores),datasets:[{data:Object.values(scores),backgroundColor:hex+'22',borderColor:hex,borderWidth:2,pointBackgroundColor:hex,pointRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{r:{min:0,max:5,ticks:{display:false},grid:{color:'rgba(255,255,255,0.06)'},angleLines:{color:'rgba(255,255,255,0.06)'},pointLabels:{font:{size:7.5,family:"'DM Sans',sans-serif",weight:'600'},color:'#4d6070'}}}}});
+}
 
-function renderSched(){const sc=state.players[curP].schedule[curW];document.getElementById('weekGrid').innerHTML=DAYS.map(d=>{const ev=sc[d];return`<div class="day-col"><div class="day-hdr">${d}</div><div class="day-slot ${ev?'filled':''} ${!canEdit()?'locked':''}" onclick="${canEdit()?`openSlot('${d}')`:''}" ${canEdit()?'role="button"':''}>${ev?`${ev.type}<br/>${ev.start||''}${ev.end?' –<br/>'+ev.end:''}`:`<span style="font-size:14px;opacity:.2">${canEdit()?'+':'·'}</span>`}</div></div>`;}).join('');}
+// ═══ SCHEDULE ═════════════════════════════════════════════
+function renderSched(){
+  const sc=cache.players[curP]?.schedule[curW]||{};
+  document.getElementById('weekGrid').innerHTML=DAYS.map(d=>{
+    const ev=sc[d];
+    return`<div class="day-col"><div class="day-hdr">${d}</div>
+    <div class="day-slot ${ev?'filled':''} ${!canEdit()?'locked':''}" onclick="${canEdit()?`openSlot('${d}')`:''}" ${canEdit()?'role="button"':''}>
+    ${ev?`${ev.type}<br/>${ev.start||''}${ev.end?' –<br/>'+ev.end:''}`:`<span style="font-size:14px;opacity:.2">${canEdit()?'+':'·'}</span>`}
+    </div></div>`;
+  }).join('');
+}
 function switchWeek(w,btn){curW=w;document.querySelectorAll('.week-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');renderSched();}
-function openSlot(d){if(!canEdit())return;editSlot=d;const ev=state.players[curP].schedule[curW][d];document.getElementById('slotTitle').textContent=`${d} — ${curW} week`;document.getElementById('slotType').value=ev?ev.type:'';fillTS();document.getElementById('slotStart').value=ev?.start||'4:00 PM';document.getElementById('slotEnd').value=ev?.end||'6:00 PM';openOverlay('slotOverlay');}
-function saveSlot(){const t=document.getElementById('slotType').value.trim(),s=document.getElementById('slotStart').value,e=document.getElementById('slotEnd').value;if(t){state.players[curP].schedule[curW][editSlot]={type:t,start:s,end:e};markU();}closeOverlay('slotOverlay');editSlot=null;renderSched();}
-function clearSlot(){if(editSlot){delete state.players[curP].schedule[curW][editSlot];markU();}closeOverlay('slotOverlay');editSlot=null;renderSched();}
+function openSlot(d){
+  if(!canEdit())return;
+  editSlot=d;
+  const ev=cache.players[curP]?.schedule[curW][d];
+  document.getElementById('slotTitle').textContent=`${d} — ${curW} week`;
+  document.getElementById('slotType').value=ev?ev.type:'';
+  fillTS();
+  document.getElementById('slotStart').value=ev?.start||'4:00 PM';
+  document.getElementById('slotEnd').value=ev?.end||'6:00 PM';
+  openOverlay('slotOverlay');
+}
+function saveSlot(){
+  const t=document.getElementById('slotType').value.trim(),s=document.getElementById('slotStart').value,e=document.getElementById('slotEnd').value;
+  if(t){cache.players[curP].schedule[curW][editSlot]={type:t,start:s,end:e};markU();}
+  closeOverlay('slotOverlay');editSlot=null;renderSched();
+}
+function clearSlot(){
+  if(editSlot){delete cache.players[curP].schedule[curW][editSlot];markU();}
+  closeOverlay('slotOverlay');editSlot=null;renderSched();
+}
 
-function renderGoals(){const g=state.players[curP].goals;document.getElementById('goalList').innerHTML=g.length?g.map((x,i)=>`<div class="goal-item"><div class="goal-cb ${x.done?'checked':''}" onclick="${canEdit()?`tG(${i})`:''}"></div><span class="goal-label ${x.done?'done':''}">${x.text}</span>${canEdit()?`<span class="goal-del" onclick="rG(${i})">×</span>`:''}</div>`).join(''):`<div style="font-size:13px;color:var(--text-3);font-style:italic;padding:6px 0">No goals set yet.</div>`;document.getElementById('goalAddRow').style.display=canEdit()?'flex':'none';}
-function addGoal(){const inp=document.getElementById('goalInput'),t=inp.value.trim();if(!t)return;state.players[curP].goals.push({text:t,done:false});markU();inp.value='';renderGoals();}
-function tG(i){state.players[curP].goals[i].done=!state.players[curP].goals[i].done;markU();renderGoals();}
-function rG(i){state.players[curP].goals.splice(i,1);markU();renderGoals();}
-function markU(){const d=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}),who=session.type==='coach'?session.name:curP;state.players[curP].lastUpdated=d;state.players[curP].lastCoach=who;document.getElementById('heroMeta').textContent=`Updated ${d} · ${who}`;document.getElementById('editCredit').textContent=`Last edited by ${who}`;save();}
+// ═══ GOALS ════════════════════════════════════════════════
+function renderGoals(){
+  const g=cache.players[curP]?.goals||[];
+  document.getElementById('goalList').innerHTML=g.length?g.map((x,i)=>`
+    <div class="goal-item"><div class="goal-cb ${x.done?'checked':''}" onclick="${canEdit()?`tG(${i})`:''}"></div>
+    <span class="goal-label ${x.done?'done':''}">${x.text}</span>
+    ${canEdit()?`<span class="goal-del" onclick="rG(${i})">×</span>`:''}</div>`).join('')
+    :`<div style="font-size:13px;color:var(--text-3);font-style:italic;padding:6px 0">No goals set yet.</div>`;
+  document.getElementById('goalAddRow').style.display=canEdit()?'flex':'none';
+}
+function addGoal(){const inp=document.getElementById('goalInput'),t=inp.value.trim();if(!t)return;cache.players[curP].goals.push({text:t,done:false});markU();inp.value='';renderGoals();}
+function tG(i){cache.players[curP].goals[i].done=!cache.players[curP].goals[i].done;markU();renderGoals();}
+function rG(i){cache.players[curP].goals.splice(i,1);markU();renderGoals();}
 
-function buildSettings(){const isC=session.type==='coach',isP=session.type==='player';let h='';
-if(isP){h+=`<p style="font-size:13px;color:var(--text-2);margin-bottom:16px">Change your personal PIN.</p><div class="settings-row"><div class="settings-lbl">New PIN</div><div style="display:flex;gap:8px"><input class="pin-digit" id="sp0" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/><input class="pin-digit" id="sp1" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/><input class="pin-digit" id="sp2" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/><input class="pin-digit" id="sp3" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/></div></div><div class="settings-row"><div class="settings-lbl">Confirm PIN</div><div style="display:flex;gap:8px"><input class="pin-digit" id="sc0" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/><input class="pin-digit" id="sc1" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/><input class="pin-digit" id="sc2" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/><input class="pin-digit" id="sc3" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/></div></div><div class="err-msg" id="spErr" style="display:none"></div><div style="display:flex;align-items:center;gap:14px;margin-top:4px"><button class="settings-save" onclick="savePPIN()">Save PIN</button><span class="ok-msg" id="spOk" style="display:none">✓ PIN updated!</span></div>`;
-document.getElementById('settingsContent').innerHTML=h;setupPA('sp');setupPA('sc');return;}
-if(isC){h+=`<p style="font-size:13px;color:var(--text-2);margin-bottom:16px">Change the shared coach password or reset a player's PIN.</p><div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-3);margin-bottom:10px">Coach password</div><div class="settings-row"><div class="settings-lbl">Current password</div><input class="settings-inp" type="password" id="sCurrent" placeholder="Current password"/></div><div class="settings-row"><div class="settings-lbl">New password</div><input class="settings-inp" type="password" id="sNew" placeholder="Min. 4 characters"/></div><div class="settings-row"><div class="settings-lbl">Confirm new</div><input class="settings-inp" type="password" id="sConfirm" placeholder="Repeat new password"/></div><div class="err-msg" id="sErr" style="display:none"></div><div style="display:flex;align-items:center;gap:14px;margin-bottom:20px"><button class="settings-save" onclick="saveCPass()">Save password</button><span class="ok-msg" id="sOk" style="display:none">✓ Updated!</span></div><div style="border-top:1px solid var(--border);padding-top:16px"><div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-3);margin-bottom:10px">Reset player PIN</div><p style="font-size:13px;color:var(--text-2);margin-bottom:12px">Resets a player's PIN to 0000. They'll be prompted to change it on next login.</p><div style="display:flex;gap:8px;align-items:center"><select class="settings-inp" id="resetSel" style="flex:1">${Object.keys(state.players).map(n=>`<option value="${n}">${n}</option>`).join('')}</select><button class="settings-save" style="white-space:nowrap" onclick="resetPIN()">Reset PIN</button></div><div class="ok-msg" id="resetOk" style="display:none;margin-top:8px"></div></div>`;
-document.getElementById('settingsContent').innerHTML=h;}}
-
-function toggleSettings(){settingsOpen=!settingsOpen;document.getElementById('settingsPanel').classList.toggle('open',settingsOpen);document.getElementById('settingsBtn').classList.toggle('active',settingsOpen);if(settingsOpen){buildSettings();document.getElementById('settingsPanel').scrollIntoView({behavior:'smooth',block:'nearest'});}}
-function savePPIN(){const np=getP('sp'),cp=getP('sc'),err=document.getElementById('spErr'),ok=document.getElementById('spOk');err.style.display='none';ok.style.display='none';if(np.length<4||!/^\d{4}$/.test(np)){err.textContent='Please enter all 4 digits.';err.style.display='block';return;}if(np==='0000'){err.textContent='Please choose a PIN other than 0000.';err.style.display='block';return;}if(np!==cp){err.textContent='PINs do not match.';err.style.display='block';return;}state.players[session.name].pin=np;state.players[session.name].firstLogin=false;save();clrP('sp');clrP('sc');ok.style.display='inline';setTimeout(()=>ok.style.display='none',3000);}
-function saveCPass(){const c=document.getElementById('sCurrent').value,n=document.getElementById('sNew').value,cf=document.getElementById('sConfirm').value,err=document.getElementById('sErr'),ok=document.getElementById('sOk');err.style.display='none';ok.style.display='none';if(c!==state.coachPassword){err.textContent='Current password is incorrect.';err.style.display='block';return;}if(n.length<4){err.textContent='Min. 4 characters.';err.style.display='block';return;}if(n!==cf){err.textContent='Passwords do not match.';err.style.display='block';return;}state.coachPassword=n;save();['sCurrent','sNew','sConfirm'].forEach(id=>document.getElementById(id).value='');ok.style.display='inline';setTimeout(()=>ok.style.display='none',3000);}
-function resetPIN(){const name=document.getElementById('resetSel').value;if(!name)return;state.players[name].pin='0000';state.players[name].firstLogin=true;save();const el=document.getElementById('resetOk');el.textContent=`✓ ${name}'s PIN reset to 0000!`;el.style.display='block';setTimeout(()=>el.style.display='none',3000);}
-
+// ═══ ADD / REMOVE PLAYER ══════════════════════════════════
 function openAddPlayer(){['newName','newAge','newHeight','newWeight'].forEach(id=>document.getElementById(id).value='');openOverlay('addOverlay');}
-function confirmAdd(){const name=document.getElementById('newName').value.trim();if(!name)return;if(state.players[name]){showToast('Player already exists.');return;}state.players[name]=newP(name,{age:document.getElementById('newAge').value,height:document.getElementById('newHeight').value,weight:document.getElementById('newWeight').value});save();closeOverlay('addOverlay');popRoster();document.getElementById('playerSelect').value=name;switchPlayer(name);popHome();}
-function removePlayer(){if(Object.keys(state.players).length<=1){showToast('Cannot remove the last player.');return;}if(!confirm(`Remove ${curP} from the roster?`))return;delete state.players[curP];save();curP=Object.keys(state.players)[0];popRoster();document.getElementById('playerSelect').value=curP;switchPlayer(curP);popHome();}
+async function confirmAdd(){
+  const name=document.getElementById('newName').value.trim();
+  if(!name)return;
+  if(cache.players[name]){showToast('Player already exists.');return;}
+  const player={name,age:document.getElementById('newAge').value,height:document.getElementById('newHeight').value,weight:document.getElementById('newWeight').value,
+    pin:'0000',firstLogin:true,scores:JSON.parse(JSON.stringify(DS)),schedule:{odd:{},even:{}},goals:[],comments:'',lastCoach:'',lastUpdated:''};
+  cache.players[name]=player;
+  cache.roster=[...new Set([...(cache.roster||[]),name])];
+  persistCache();
+  closeOverlay('addOverlay');
+  setSyncState('syncing');
+  const res=await apiPost({action:'addPlayer',player});
+  setSyncState(res.ok?'synced':'error');
+  if(res.ok){showToast(`${name} added!`);}
+  else{showToast('Saved locally — will sync when online.');}
+  popRoster();
+  document.getElementById('playerSelect').value=name;
+  switchPlayer(name);
+  popHome();
+}
+async function removePlayer(){
+  if((cache.roster||[]).length<=1){showToast('Cannot remove the last player.');return;}
+  if(!confirm(`Remove ${curP} from the roster?`))return;
+  delete cache.players[curP];
+  cache.roster=(cache.roster||[]).filter(n=>n!==curP);
+  persistCache();
+  setSyncState('syncing');
+  const res=await apiPost({action:'removePlayer',name:curP});
+  setSyncState(res.ok?'synced':'error');
+  curP=cache.roster[0];
+  popRoster();popHome();
+  document.getElementById('playerSelect').value=curP;
+  const pr=await api({action:'getPlayer',name:curP});
+  if(pr.ok){cache.players[curP]=pr.player;persistCache();}
+  loadPlayer(curP);
+}
 
+// ═══ SETTINGS ═════════════════════════════════════════════
+function buildSettings(){
+  const isC=session.type==='coach',isP=session.type==='player';let h='';
+  if(isP){
+    h+=`<p style="font-size:13px;color:var(--text-2);margin-bottom:16px">Change your personal PIN.</p>
+    <div class="settings-row"><div class="settings-lbl">New PIN</div><div style="display:flex;gap:8px">
+    <input class="pin-digit" id="sp0" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/>
+    <input class="pin-digit" id="sp1" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/>
+    <input class="pin-digit" id="sp2" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/>
+    <input class="pin-digit" id="sp3" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/>
+    </div></div>
+    <div class="settings-row"><div class="settings-lbl">Confirm PIN</div><div style="display:flex;gap:8px">
+    <input class="pin-digit" id="sc0" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/>
+    <input class="pin-digit" id="sc1" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/>
+    <input class="pin-digit" id="sc2" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/>
+    <input class="pin-digit" id="sc3" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/>
+    </div></div>
+    <div class="err-msg" id="spErr" style="display:none"></div>
+    <div style="display:flex;align-items:center;gap:14px;margin-top:4px">
+    <button class="settings-save" onclick="savePPIN()">Save PIN</button>
+    <span class="ok-msg" id="spOk" style="display:none">✓ PIN updated!</span></div>`;
+    document.getElementById('settingsContent').innerHTML=h;
+    setupPA('sp');setupPA('sc');return;
+  }
+  if(isC){
+    h+=`<p style="font-size:13px;color:var(--text-2);margin-bottom:16px">Change the shared coach password or reset a player's PIN.</p>
+    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-3);margin-bottom:10px">Coach password</div>
+    <div class="settings-row"><div class="settings-lbl">Current password</div><input class="settings-inp" type="password" id="sCurrent" placeholder="Current password"/></div>
+    <div class="settings-row"><div class="settings-lbl">New password</div><input class="settings-inp" type="password" id="sNew" placeholder="Min. 4 characters"/></div>
+    <div class="settings-row"><div class="settings-lbl">Confirm new</div><input class="settings-inp" type="password" id="sConfirm" placeholder="Repeat new password"/></div>
+    <div class="err-msg" id="sErr" style="display:none"></div>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">
+    <button class="settings-save" onclick="saveCPass()">Save password</button>
+    <span class="ok-msg" id="sOk" style="display:none">✓ Updated!</span></div>
+    <div style="border-top:1px solid var(--border);padding-top:16px">
+    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-3);margin-bottom:10px">Reset player PIN</div>
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:12px">Resets a player's PIN to 0000. They'll be prompted to change it on next login.</p>
+    <div style="display:flex;gap:8px;align-items:center">
+    <select class="settings-inp" id="resetSel" style="flex:1">${(cache.roster||[]).map(n=>`<option value="${n}">${n}</option>`).join('')}</select>
+    <button class="settings-save" style="white-space:nowrap" onclick="resetPIN()">Reset PIN</button></div>
+    <div class="ok-msg" id="resetOk" style="display:none;margin-top:8px"></div></div>`;
+    document.getElementById('settingsContent').innerHTML=h;
+  }
+}
+
+function toggleSettings(){
+  settingsOpen=!settingsOpen;
+  document.getElementById('settingsPanel').classList.toggle('open',settingsOpen);
+  document.getElementById('settingsBtn').classList.toggle('active',settingsOpen);
+  if(settingsOpen){buildSettings();document.getElementById('settingsPanel').scrollIntoView({behavior:'smooth',block:'nearest'});}
+}
+
+async function savePPIN(){
+  const np=getP('sp'),cp=getP('sc'),err=document.getElementById('spErr'),ok=document.getElementById('spOk');
+  err.style.display='none';ok.style.display='none';
+  if(np.length<4||!/^\d{4}$/.test(np)){err.textContent='Please enter all 4 digits.';err.style.display='block';return;}
+  if(np==='0000'){err.textContent='Please choose a PIN other than 0000.';err.style.display='block';return;}
+  if(np!==cp){err.textContent='PINs do not match.';err.style.display='block';return;}
+  cache.players[session.name].pin=np;
+  cache.players[session.name].firstLogin=false;
+  persistCache();
+  scheduleSave(session.name);
+  clrP('sp');clrP('sc');
+  ok.style.display='inline';setTimeout(()=>ok.style.display='none',3000);
+}
+
+async function saveCPass(){
+  const c=document.getElementById('sCurrent').value,n=document.getElementById('sNew').value,cf=document.getElementById('sConfirm').value;
+  const err=document.getElementById('sErr'),ok=document.getElementById('sOk');
+  err.style.display='none';ok.style.display='none';
+  if(c!==cache.coachPassword){err.textContent='Current password is incorrect.';err.style.display='block';return;}
+  if(n.length<4){err.textContent='Min. 4 characters.';err.style.display='block';return;}
+  if(n!==cf){err.textContent='Passwords do not match.';err.style.display='block';return;}
+  cache.coachPassword=n;persistCache();
+  const res=await apiPost({action:'saveSettings',coachPassword:n});
+  ['sCurrent','sNew','sConfirm'].forEach(id=>document.getElementById(id).value='');
+  ok.textContent=res.ok?'✓ Updated!':'✓ Saved locally';ok.style.display='inline';
+  setTimeout(()=>ok.style.display='none',3000);
+}
+
+async function resetPIN(){
+  const name=document.getElementById('resetSel').value;if(!name)return;
+  const p=cache.players[name];
+  if(p){p.pin='0000';p.firstLogin=true;persistCache();scheduleSave(name);}
+  const el=document.getElementById('resetOk');
+  el.textContent=`✓ ${name}'s PIN reset to 0000!`;el.style.display='block';
+  setTimeout(()=>el.style.display='none',3000);
+}
+
+// ═══ OVERLAYS ═════════════════════════════════════════════
 function openOverlay(id){document.getElementById(id).classList.add('show');document.body.style.overflow='hidden';}
 function closeOverlay(id){document.getElementById(id).classList.remove('show');document.body.style.overflow='';}
-document.querySelectorAll('.overlay').forEach(ov=>ov.addEventListener('click',e=>{if(e.target===ov&&ov.id!=='playerPinOverlay'&&ov.id!=='changePinOverlay')closeOverlay(ov.id);}));
+document.querySelectorAll('.overlay').forEach(ov=>ov.addEventListener('click',e=>{
+  if(e.target===ov&&ov.id!=='playerPinOverlay'&&ov.id!=='changePinOverlay')closeOverlay(ov.id);
+}));
 
+// ═══ PDF / EMAIL ══════════════════════════════════════════
 function openPDFSheet(){document.getElementById('pdfSheetSub').textContent=`Export a full progress report for ${curP}.`;openOverlay('pdfOverlay');}
 function openEmailSheet(){closeOverlay('pdfOverlay');document.getElementById('emailTo').value='';document.getElementById('emailErr').style.display='none';openOverlay('emailOverlay');}
 function doPrint(){buildPR();closeOverlay('pdfOverlay');setTimeout(()=>{window.print();setTimeout(()=>document.getElementById('printReport').innerHTML='',1500);},200);}
-function doEmailReport(){const to=document.getElementById('emailTo').value.trim(),err=document.getElementById('emailErr');if(!to||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)){err.style.display='block';return;}const p=state.players[curP],dt=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}),cs=Object.entries(p.scores.cog).map(([k,v])=>`${k}: ${v}/5`).join(', '),ps=Object.entries(p.scores.phys).map(([k,v])=>`${k}: ${v}/5`).join(', '),bs=Object.entries(p.scores.bball).map(([k,v])=>`${k}: ${v}/5`).join(', '),gs=p.goals.length?p.goals.map(g=>`${g.done?'[✓]':'[ ]'} ${g.text}`).join('\n'):'No goals set.';const subj=encodeURIComponent(`HoopTrack Report — ${curP} — ${dt}`),body=encodeURIComponent(`HoopTrack Player Report\n=======================\nPlayer: ${curP}\nDate: ${dt}\n${p.lastCoach?`Last updated by: ${p.lastCoach}`:''}\n\nPLAYER INFO\nAge: ${p.age||'—'}  |  Height: ${p.height||'—'}  |  Weight: ${p.weight||'—'}\n\nCOGNITIVE SKILLS\n${cs}\n\nPHYSICAL & MENTAL\n${ps}\n\nBASKETBALL SKILLS\n${bs}\n\nGOALS\n${gs}\n\nCOMMENTS\n${p.comments||'No comments recorded.'}\n\n---\nGenerated by HoopTrack on ${dt}`);window.open(`mailto:${to}?subject=${subj}&body=${body}`);closeOverlay('emailOverlay');showToast('Email app opened!');}
+function doEmailReport(){
+  const to=document.getElementById('emailTo').value.trim(),err=document.getElementById('emailErr');
+  if(!to||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)){err.style.display='block';return;}
+  const p=cache.players[curP],dt=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const cs=Object.entries(p.scores.cog).map(([k,v])=>`${k}: ${v}/5`).join(', ');
+  const ps=Object.entries(p.scores.phys).map(([k,v])=>`${k}: ${v}/5`).join(', ');
+  const bs=Object.entries(p.scores.bball).map(([k,v])=>`${k}: ${v}/5`).join(', ');
+  const gs=p.goals.length?p.goals.map(g=>`${g.done?'[✓]':'[ ]'} ${g.text}`).join('\n'):'No goals set.';
+  const subj=encodeURIComponent(`HoopTrack Report — ${curP} — ${dt}`);
+  const body=encodeURIComponent(`HoopTrack Player Report\n=======================\nPlayer: ${curP}\nDate: ${dt}\n${p.lastCoach?`Last updated by: ${p.lastCoach}`:''}\n\nPLAYER INFO\nAge: ${p.age||'—'}  |  Height: ${p.height||'—'}  |  Weight: ${p.weight||'—'}\n\nCOGNITIVE SKILLS\n${cs}\n\nPHYSICAL & MENTAL\n${ps}\n\nBASKETBALL SKILLS\n${bs}\n\nGOALS\n${gs}\n\nCOMMENTS\n${p.comments||'No comments recorded.'}\n\n---\nGenerated by HoopTrack on ${dt}`);
+  window.open(`mailto:${to}?subject=${subj}&body=${body}`);
+  closeOverlay('emailOverlay');showToast('Email app opened!');
+}
 
-function buildPR(){const p=state.players[curP],dt=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}),ci=capC('cogRadar'),pi=capC('physRadar'),bi=capC('bballRadar');
-function sdH(sc,cl){return Object.entries(sc).map(([s,v])=>`<div class="pr-skill-row"><span class="pr-skill-name">${s}</span><div class="pr-skill-dots">${[1,2,3,4,5].map(i=>`<div class="pr-dot ${i<=v?'on-'+cl:''}"></div>`).join('')}<span class="pr-score-num">${v||0}</span></div></div>`).join('');}
-function shH(sc){return DAYS.map(d=>{const ev=sc[d];return`<div><div class="pr-day-hdr">${d}</div><div class="pr-day-slot ${ev?'filled':''}">${ev?`${ev.type}<br/>${ev.start||''}${ev.end?' –<br/>'+ev.end:''}`:'—'}</div></div>`;}).join('');}
-const gH=p.goals.length?p.goals.map(g=>`<div class="pr-goal-item"><div class="pr-goal-cb ${g.done?'done':''}">${g.done?'✓':''}</div><span class="pr-goal-txt ${g.done?'done':''}">${g.text}</span></div>`).join(''):'<div class="pr-empty">No goals set.</div>';
-document.getElementById('printReport').innerHTML=`<div class="pr-page"><div class="pr-hdr"><div class="pr-logo"><img src="icons/icon-192.png" alt="Coach Will" /><span class="pr-logo-txt">HoopTrack</span></div><div class="pr-date">Player Report · ${dt}</div></div><div class="pr-player-row"><div class="pr-avatar">${ini(curP)}</div><div><div class="pr-pname">${curP}</div><div class="pr-psub">${p.lastUpdated?`Last updated ${p.lastUpdated} by ${p.lastCoach}`:'No updates yet'}</div></div></div><div class="pr-info-grid"><div class="pr-info-box"><div class="pr-info-lbl">Age</div><div class="pr-info-val">${p.age||'—'}</div></div><div class="pr-info-box"><div class="pr-info-lbl">Height</div><div class="pr-info-val">${p.height||'—'}</div></div><div class="pr-info-box"><div class="pr-info-lbl">Weight</div><div class="pr-info-val">${p.weight||'—'}</div></div></div><div class="pr-sec-title"><span class="pr-sec-dot" style="background:#FF6B35"></span>Cognitive skills</div><div class="pr-skills-grid"><div>${sdH(p.scores.cog,'orange')}</div>${ci?`<img class="pr-radar-img" src="${ci}"/>`:'<div></div>'}</div><div class="pr-sec-title"><span class="pr-sec-dot" style="background:#00C9B1"></span>Physical &amp; mental</div><div class="pr-skills-grid"><div>${sdH(p.scores.phys,'teal')}</div>${pi?`<img class="pr-radar-img" src="${pi}"/>`:'<div></div>'}</div></div><div class="pr-page"><div class="pr-hdr"><div class="pr-logo"><img src="icons/icon-192.png" alt="Coach Will" /><span class="pr-logo-txt">HoopTrack</span></div><div class="pr-date">${curP} · ${dt}</div></div><div class="pr-sec-title"><span class="pr-sec-dot" style="background:#9B72CF"></span>Basketball skills</div><div class="pr-skills-grid"><div>${sdH(p.scores.bball,'purple')}</div>${bi?`<img class="pr-radar-img" src="${bi}"/>`:'<div></div>'}</div><div class="pr-sec-title" style="margin-top:18px"><span class="pr-sec-dot" style="background:#00C9B1"></span>Schedule — odd week</div><div class="pr-sched-grid">${shH(p.schedule.odd)}</div><div class="pr-sec-title"><span class="pr-sec-dot" style="background:#00C9B1"></span>Schedule — even week</div><div class="pr-sched-grid">${shH(p.schedule.even)}</div><div class="pr-sec-title" style="margin-top:18px"><span class="pr-sec-dot" style="background:#FFD23F"></span>Goals</div><div class="pr-goals">${gH}</div><div class="pr-sec-title"><span class="pr-sec-dot" style="background:#FFD23F"></span>Comments</div><div class="pr-comments-box">${p.comments||'No comments recorded.'}</div><div class="pr-footer"><span class="pr-footer-txt">HoopTrack by Coach Will</span><span class="pr-footer-txt">Generated ${dt}</span></div></div>`;}
+function buildPR(){
+  const p=cache.players[curP],dt=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const ci=capC('cogRadar'),pi=capC('physRadar'),bi=capC('bballRadar');
+  function sdH(sc,cl){return Object.entries(sc).map(([s,v])=>`<div class="pr-skill-row"><span class="pr-skill-name">${s}</span><div class="pr-skill-dots">${[1,2,3,4,5].map(i=>`<div class="pr-dot ${i<=v?'on-'+cl:''}"></div>`).join('')}<span class="pr-score-num">${v||0}</span></div></div>`).join('');}
+  function shH(sc){return DAYS.map(d=>{const ev=sc[d];return`<div><div class="pr-day-hdr">${d}</div><div class="pr-day-slot ${ev?'filled':''}">${ev?`${ev.type}<br/>${ev.start||''}${ev.end?' –<br/>'+ev.end:''}`:'—'}</div></div>`;}).join('');}
+  const gH=p.goals.length?p.goals.map(g=>`<div class="pr-goal-item"><div class="pr-goal-cb ${g.done?'done':''}">${g.done?'✓':''}</div><span class="pr-goal-txt ${g.done?'done':''}">${g.text}</span></div>`).join(''):'<div class="pr-empty">No goals set.</div>';
+  document.getElementById('printReport').innerHTML=`
+  <div class="pr-page"><div class="pr-hdr"><div class="pr-logo"><img src="icons/icon-192.png" alt=""/><span class="pr-logo-txt">HoopTrack</span></div><div class="pr-date">Player Report · ${dt}</div></div>
+  <div class="pr-player-row"><div class="pr-avatar">${ini(curP)}</div><div><div class="pr-pname">${curP}</div><div class="pr-psub">${p.lastUpdated?`Last updated ${p.lastUpdated} by ${p.lastCoach}`:'No updates yet'}</div></div></div>
+  <div class="pr-info-grid"><div class="pr-info-box"><div class="pr-info-lbl">Age</div><div class="pr-info-val">${p.age||'—'}</div></div><div class="pr-info-box"><div class="pr-info-lbl">Height</div><div class="pr-info-val">${p.height||'—'}</div></div><div class="pr-info-box"><div class="pr-info-lbl">Weight</div><div class="pr-info-val">${p.weight||'—'}</div></div></div>
+  <div class="pr-sec-title"><span class="pr-sec-dot" style="background:#FF6B35"></span>Cognitive skills</div><div class="pr-skills-grid"><div>${sdH(p.scores.cog,'orange')}</div>${ci?`<img class="pr-radar-img" src="${ci}"/>`:'<div></div>'}</div>
+  <div class="pr-sec-title"><span class="pr-sec-dot" style="background:#00C9B1"></span>Physical &amp; mental</div><div class="pr-skills-grid"><div>${sdH(p.scores.phys,'teal')}</div>${pi?`<img class="pr-radar-img" src="${pi}"/>`:'<div></div>'}</div></div>
+  <div class="pr-page"><div class="pr-hdr"><div class="pr-logo"><img src="icons/icon-192.png" alt=""/><span class="pr-logo-txt">HoopTrack</span></div><div class="pr-date">${curP} · ${dt}</div></div>
+  <div class="pr-sec-title"><span class="pr-sec-dot" style="background:#9B72CF"></span>Basketball skills</div><div class="pr-skills-grid"><div>${sdH(p.scores.bball,'purple')}</div>${bi?`<img class="pr-radar-img" src="${bi}"/>`:'<div></div>'}</div>
+  <div class="pr-sec-title" style="margin-top:18px"><span class="pr-sec-dot" style="background:#00C9B1"></span>Schedule — odd week</div><div class="pr-sched-grid">${shH(p.schedule.odd)}</div>
+  <div class="pr-sec-title"><span class="pr-sec-dot" style="background:#00C9B1"></span>Schedule — even week</div><div class="pr-sched-grid">${shH(p.schedule.even)}</div>
+  <div class="pr-sec-title" style="margin-top:18px"><span class="pr-sec-dot" style="background:#FFD23F"></span>Goals</div><div class="pr-goals">${gH}</div>
+  <div class="pr-sec-title"><span class="pr-sec-dot" style="background:#FFD23F"></span>Comments</div><div class="pr-comments-box">${p.comments||'No comments recorded.'}</div>
+  <div class="pr-footer"><span class="pr-footer-txt">HoopTrack by Coach Will</span><span class="pr-footer-txt">Generated ${dt}</span></div></div>`;
+}
 function capC(id){try{return document.getElementById(id)?.toDataURL('image/png')||'';}catch(e){return '';}}
 
-function showToast(msg){let t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 24px);left:50%;transform:translateX(-50%);background:#1e2d3d;color:#e8edf5;padding:10px 20px;border-radius:10px;font-size:13px;z-index:999;border:1px solid rgba(255,255,255,.1);white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.4);transition:opacity .3s;pointer-events:none;';document.body.appendChild(t);}t.textContent=msg;t.style.opacity='1';clearTimeout(t._t);t._t=setTimeout(()=>t.style.opacity='0',2400);}
+// ═══ HELPERS ══════════════════════════════════════════════
+function ini(n){const p=n.trim().split(' ');return p.length>1?(p[0][0]+p[1][0]).toUpperCase():n.slice(0,2).toUpperCase();}
+function getP(px){return[0,1,2,3].map(i=>(document.getElementById(px+i)?.value||'').slice(-1)).join('');}
+function clrP(px){[0,1,2,3].forEach(i=>{const e=document.getElementById(px+i);if(e){e.value='';e.classList.remove('filled');}});}
+function setupPA(px){[0,1,2,3].forEach(i=>{const e=document.getElementById(px+i);if(!e)return;e.addEventListener('input',function(){const v=this.value.replace(/\D/g,'').slice(-1);this.value=v;this.classList.toggle('filled',v!=='');if(v&&i<3)document.getElementById(px+(i+1))?.focus();});e.addEventListener('keydown',function(ev){if(ev.key==='Backspace'&&!this.value&&i>0)document.getElementById(px+(i-1))?.focus();});});}
+function setupAllPins(){['pin','npin','cpin'].forEach(p=>setupPA(p));}
 
-document.getElementById('commentsTa').addEventListener('input',function(){if(canEdit()){state.players[curP].comments=this.value;markU();}});
-['fAge','fHeight','fWeight'].forEach(id=>{document.getElementById(id).addEventListener('change',function(){if(!canEdit())return;const k=id==='fAge'?'age':id==='fHeight'?'height':'weight';state.players[curP][k]=this.value;markU();});});
+const TO=(()=>{const o=[];for(let h=0;h<24;h++)for(let m=0;m<60;m+=15){const h12=h%12===0?12:h%12,ap=h<12?'AM':'PM',mm=m===0?'00':m;o.push(`${h12}:${mm} ${ap}`);}return o;})();
+function fillTS(){['slotStart','slotEnd'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=TO.map(t=>`<option value="${t}">${t}</option>`).join('');});}
+
+function showToast(msg){
+  let t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 24px);left:50%;transform:translateX(-50%);background:#1e2d3d;color:#e8edf5;padding:10px 20px;border-radius:10px;font-size:13px;z-index:999;border:1px solid rgba(255,255,255,.1);white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.4);transition:opacity .3s;pointer-events:none;';document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity='1';clearTimeout(t._t);t._t=setTimeout(()=>t.style.opacity='0',2600);
+}
+
+// ═══ INPUTS ═══════════════════════════════════════════════
+document.getElementById('commentsTa').addEventListener('input',function(){if(canEdit()){cache.players[curP].comments=this.value;markU();}});
+['fAge','fHeight','fWeight'].forEach(id=>{document.getElementById(id).addEventListener('change',function(){if(!canEdit())return;const k=id==='fAge'?'age':id==='fHeight'?'height':'weight';cache.players[curP][k]=this.value;markU();});});
 document.getElementById('goalInput').addEventListener('keydown',e=>{if(e.key==='Enter')addGoal();});
 
+// ═══ PWA ══════════════════════════════════════════════════
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;if(!localStorage.getItem('ht_install_dismissed'))document.getElementById('installBanner').style.display='flex';});
 function doInstall(){if(!deferredInstall)return;deferredInstall.prompt();deferredInstall.userChoice.then(()=>{deferredInstall=null;document.getElementById('installBanner').style.display='none';});}
 function dismissInstall(){document.getElementById('installBanner').style.display='none';localStorage.setItem('ht_install_dismissed','1');}
 window.addEventListener('appinstalled',()=>document.getElementById('installBanner').style.display='none');
+window.addEventListener('online',()=>{showOffline(false);setSyncState('synced');});
+window.addEventListener('offline',()=>{showOffline(true);setSyncState('offline');});
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
-
-setupPA('pin');setupPA('npin');setupPA('cpin');
-fillTS();popHome();
 </script>
 </body>
 </html>
