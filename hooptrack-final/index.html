@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+  <meta name="theme-color" content="#FF6B35"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="HoopTrack"/>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png"/>
+  <title>HoopTrack — Coach Will</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --orange:#FF6B35;--odim:rgba(255,107,53,.15);
+  --navy:#0f1923;--n2:#162030;--n3:#1e2d3d;--n4:#253548;
+  --teal:#00C9B1;--purple:#9B72CF;--green:#48C774;--red:#F04747;
+  --tx:#e8edf5;--tx2:#8fa3b8;--tx3:#4d6070;
+  --bd:rgba(255,255,255,.07);--bd2:rgba(255,255,255,.12);
+  --card:rgba(255,255,255,.04);
+  --fd:'Barlow Condensed',sans-serif;--fb:'DM Sans',sans-serif;
+  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px)
+}
+html,body{height:100%;background:var(--navy);color:var(--tx);font-family:var(--fb);font-size:15px;line-height:1.5;overflow-x:hidden}
+#app{display:flex;flex-direction:column;height:100dvh;max-width:480px;margin:0 auto;overflow:hidden}
+
+/* ── LOADING ── */
+#loadingScreen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.spin{width:38px;height:38px;border:3px solid var(--bd2);border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-size:13px;color:var(--tx2)}
+
+/* ── OFFLINE BANNER ── */
+#offlineBanner{background:var(--red);color:#fff;text-align:center;padding:8px 16px;font-size:13px;font-weight:600;display:none;flex-shrink:0}
+
+/* ── SETUP SCREEN ── */
+#setupScreen{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;text-align:center;overflow-y:auto;gap:0}
+.setup-logo{width:90px;height:90px;object-fit:contain;margin-bottom:18px;filter:drop-shadow(0 0 24px rgba(255,107,53,.4))}
+.setup-title{font-family:var(--fd);font-size:34px;font-weight:900;margin-bottom:6px}
+.setup-title em{color:var(--orange);font-style:normal}
+.setup-sub{font-size:14px;color:var(--tx2);margin-bottom:28px;line-height:1.6;max-width:300px}
+.setup-inp{width:100%;max-width:340px;background:var(--n3);border:1.5px solid var(--bd2);border-radius:12px;padding:13px 16px;font-family:var(--fb);font-size:14px;color:var(--tx);outline:none;margin-bottom:10px}
+.setup-inp:focus{border-color:var(--orange)}
+.setup-inp::placeholder{color:var(--tx3)}
+.setup-btn{width:100%;max-width:340px;background:var(--orange);color:#fff;border:none;border-radius:12px;padding:14px;font-family:var(--fb);font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(255,107,53,.3)}
+.setup-err{font-size:12px;color:var(--red);margin-top:8px;max-width:340px;display:none;line-height:1.5}
+.setup-hint{font-size:12px;color:var(--tx3);margin-top:10px;max-width:340px;line-height:1.5}
+
+/* ── HEADER ── */
+.hdr{background:var(--n2);padding:calc(var(--st) + 12px) 18px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bd);flex-shrink:0;z-index:10}
+.hdr-logo{display:flex;align-items:center;gap:10px}
+.logo-img{width:34px;height:34px;border-radius:8px;object-fit:cover}
+.logo-txt{font-family:var(--fd);font-size:22px;font-weight:800;letter-spacing:.5px;line-height:1}
+.logo-txt em{color:var(--orange);font-style:normal}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.ibtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--bd2);background:var(--card);color:var(--tx2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s;font-size:16px}
+.ibtn:active{transform:scale(.92)}
+.ibtn.on{background:var(--orange);border-color:var(--orange);color:#fff;box-shadow:0 0 16px rgba(255,107,53,.4)}
+.sync-wrap{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx3)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0}
+.sync-dot.busy{background:var(--orange);animation:pulse .8s ease-in-out infinite}
+.sync-dot.err{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── HOME ── */
+#homeScreen{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center}
+.home-logo{width:120px;height:120px;object-fit:contain;margin-bottom:18px;filter:drop-shadow(0 0 28px rgba(255,107,53,.4))}
+.home-h{font-family:var(--fd);font-size:38px;font-weight:900;letter-spacing:1px;line-height:1;margin-bottom:6px}
+.home-h em{color:var(--orange);font-style:normal;display:block}
+.home-tag{font-size:15px;color:var(--tx2);margin-bottom:36px;line-height:1.6;max-width:280px}
+.home-tag strong{color:var(--tx);font-weight:600}
+.home-sel-wrap{width:100%;max-width:320px;margin-bottom:12px}
+.home-sel{width:100%;background:var(--n3);border:1.5px solid var(--bd2);color:var(--tx);padding:14px 40px 14px 18px;border-radius:14px;font-family:var(--fb);font-size:16px;font-weight:500;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath fill='%238fa3b8' d='M6 8L0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+.home-sel:focus{outline:none;border-color:var(--orange)}
+.home-sel option{background:#162030}
+.home-hint{font-size:12px;color:var(--tx3);margin-bottom:0}
+.home-div{width:100%;max-width:320px;display:flex;align-items:center;gap:12px;margin:22px 0;color:var(--tx3);font-size:12px}
+.home-div::before,.home-div::after{content:'';flex:1;height:1px;background:var(--bd)}
+.coach-btn{width:100%;max-width:320px;background:var(--n3);border:1.5px solid var(--bd2);color:var(--tx2);padding:13px 18px;border-radius:14px;font-family:var(--fb);font-size:15px;font-weight:500;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.coach-btn:hover{border-color:var(--orange);color:var(--tx)}
+
+/* ── ROSTER BAR ── */
+.roster-bar{background:var(--n3);padding:10px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--bd);flex-shrink:0}
+.rsel-wrap{flex:1}
+.rsel{width:100%;background:var(--n4);border:1px solid var(--bd2);color:var(--tx);padding:9px 34px 9px 14px;border-radius:10px;font-family:var(--fb);font-size:14px;font-weight:500;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath fill='%238fa3b8' d='M6 8L0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.rsel:focus{outline:none;border-color:var(--orange)}
+.rsel option{background:#162030}
+.rab{width:36px;height:36px;border-radius:10px;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;font-weight:700;transition:all .18s;flex-shrink:0}
+.rab.add{background:var(--orange);color:#fff}
+.rab.rem{background:var(--n4);color:var(--tx3);border:1px solid var(--bd)}
+.rab:active{transform:scale(.9)}
+
+/* ── SCROLL ── */
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 16px calc(var(--sb) + 20px);display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch}
+.scroll::-webkit-scrollbar{display:none}
+
+/* ── SESSION TAG ── */
+.stag{display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(0,201,177,.08);border:1px solid rgba(0,201,177,.2);border-radius:10px;font-size:12px;color:var(--teal);font-weight:600}
+.stag-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);flex-shrink:0}
+
+/* ── PLAYER HERO ── */
+.hero{background:linear-gradient(135deg,var(--n3),var(--n4));border:1px solid var(--bd2);border-radius:16px;padding:18px;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;right:-20px;top:-20px;width:120px;height:120px;background:radial-gradient(circle,rgba(255,107,53,.15),transparent 70%);pointer-events:none}
+.avatar{width:54px;height:54px;border-radius:14px;background:var(--odim);border:2px solid rgba(255,107,53,.3);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:22px;font-weight:800;color:var(--orange);flex-shrink:0}
+.hero-info{flex:1;min-width:0}
+.hero-name{font-family:var(--fd);font-size:26px;font-weight:800;letter-spacing:.5px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hero-meta{font-size:12px;color:var(--tx2);margin-top:4px}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.card{animation:fadeUp .3s ease both}
+.card:nth-child(1){animation-delay:.02s}.card:nth-child(2){animation-delay:.05s}.card:nth-child(3){animation-delay:.08s}.card:nth-child(4){animation-delay:.11s}.card:nth-child(5){animation-delay:.14s}
+.chdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.ctitle{font-family:var(--fd);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--tx2);display:flex;align-items:center;gap:8px}
+.ctitle .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.stag2{font-size:10px;font-weight:600;color:var(--tx3);background:var(--bd);padding:3px 8px;border-radius:20px}
+
+/* ── INFO ── */
+.irow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.iblock{background:var(--n3);border-radius:10px;padding:10px 12px}
+.ilbl{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--tx3);margin-bottom:3px;font-weight:600}
+.iinp{background:none;border:none;color:var(--tx);font-family:var(--fb);font-size:15px;font-weight:600;width:100%;outline:none}
+.iinp:disabled{cursor:default;opacity:.6}
+.iinp:focus{color:var(--orange)}
+
+/* ── SKILLS ── */
+.srw{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start}
+.slist{display:flex;flex-direction:column}
+.srow{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bd)}
+.srow:last-child{border-bottom:none}
+.sname{font-size:12px;font-weight:500;color:var(--tx2)}
+.sright{display:flex;align-items:center;gap:6px}
+.dpips{display:flex;gap:3px}
+.pip{width:7px;height:7px;border-radius:50%;background:var(--n4);transition:background .25s}
+.sval{font-family:var(--fd);font-size:16px;font-weight:700;min-width:16px;text-align:right}
+.stpr{display:flex;align-items:center;gap:5px}
+.sb{width:24px;height:24px;border-radius:7px;border:none;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
+.sb.m{background:var(--n4);color:var(--tx2)}.sb.p{background:var(--orange);color:#fff}
+.sb:active{transform:scale(.88)}
+.rw{width:140px;height:140px;flex-shrink:0}
+
+/* ── SCHEDULE ── */
+.wtabs{display:flex;background:var(--n3);border-radius:10px;padding:3px;margin-bottom:14px}
+.wtab{flex:1;padding:8px;text-align:center;border-radius:8px;border:none;background:none;cursor:pointer;font-family:var(--fb);font-size:13px;font-weight:600;color:var(--tx3);transition:all .2s}
+.wtab.on{background:var(--navy);color:var(--tx);box-shadow:0 1px 6px rgba(0,0,0,.3)}
+.wgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.dcol{display:flex;flex-direction:column;gap:4px}
+.dhdr{font-size:9px;font-weight:700;text-align:center;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px}
+.dslot{min-height:56px;border-radius:8px;border:1px dashed var(--bd2);background:var(--n3);display:flex;align-items:center;justify-content:center;font-size:9px;text-align:center;cursor:pointer;transition:all .2s;padding:4px 3px;color:var(--tx3);line-height:1.3}
+.dslot.fill{background:var(--odim);border:1px solid rgba(255,107,53,.35);color:var(--orange);font-weight:600;font-size:8.5px}
+.dslot.lk{cursor:default}
+
+/* ── GOALS ── */
+.gwrap{margin-top:16px;padding-top:16px;border-top:1px solid var(--bd)}
+.gtitle{font-family:var(--fd);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--tx2);margin-bottom:10px}
+.gitem{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--bd)}
+.gitem:last-child{border-bottom:none}
+.gcb{width:18px;height:18px;border-radius:50%;border:2px solid var(--bd2);flex-shrink:0;margin-top:2px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.gcb.chk{background:var(--green);border-color:var(--green)}
+.gcb.chk::after{content:'✓';font-size:10px;color:#fff;line-height:1}
+.glbl{font-size:13px;flex:1;line-height:1.4}
+.glbl.dn{text-decoration:line-through;color:var(--tx3)}
+.gdel{color:var(--tx3);font-size:18px;line-height:1;cursor:pointer;padding:0 2px}
+.garow{display:flex;gap:8px;margin-top:10px}
+.ginp{flex:1;background:var(--n3);border:1px solid var(--bd2);border-radius:10px;padding:9px 12px;font-family:var(--fb);font-size:13px;color:var(--tx);outline:none}
+.ginp:focus{border-color:var(--orange)}
+.gabtn{background:var(--orange);color:#fff;border:none;border-radius:10px;padding:9px 14px;font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+
+/* ── COMMENTS ── */
+.cta{width:100%;background:var(--n3);border:1px solid var(--bd);border-radius:10px;padding:12px;font-family:var(--fb);font-size:13px;color:var(--tx);resize:vertical;min-height:80px;outline:none;line-height:1.6}
+.cta:focus{border-color:var(--orange)}
+.cta:disabled{opacity:.5;cursor:default}
+.ecredit{font-size:11px;color:var(--tx3);margin-top:7px}
+
+/* ── SETTINGS ── */
+.scard{display:none}.scard.open{display:block}
+.srow2{margin-bottom:12px}
+.slbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--tx3);margin-bottom:6px}
+.sinp{width:100%;background:var(--n3);border:1px solid var(--bd2);border-radius:10px;padding:10px 14px;font-family:var(--fb);font-size:14px;color:var(--tx);outline:none}
+.sinp:focus{border-color:var(--orange)}
+.sbtn{background:var(--orange);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-family:var(--fb);font-size:14px;font-weight:600;cursor:pointer}
+.emsg{font-size:12px;color:var(--red);margin:-6px 0 10px}
+.okmsg{font-size:12px;color:var(--green);font-weight:600}
+
+/* ── OVERLAYS ── */
+.ov{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.ov.show{opacity:1;pointer-events:all}
+.sheet{background:var(--n2);border-radius:20px 20px 0 0;padding:0 20px calc(var(--sb) + 28px);width:100%;max-width:480px;max-height:90dvh;overflow-y:auto;transform:translateY(40px);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.ov.show .sheet{transform:translateY(0)}
+.shandle{width:40px;height:4px;background:var(--bd2);border-radius:2px;margin:14px auto 20px}
+.shtitle{font-family:var(--fd);font-size:22px;font-weight:800;margin-bottom:4px}
+.shsub{font-size:13px;color:var(--tx2);margin-bottom:22px;line-height:1.5}
+.shinp{width:100%;background:var(--n3);border:1.5px solid var(--bd2);border-radius:12px;padding:13px 16px;font-family:var(--fb);font-size:15px;color:var(--tx);outline:none;margin-bottom:12px}
+.shinp:focus{border-color:var(--orange)}
+.shacts{display:flex;gap:10px;margin-top:4px}
+.shok{flex:1;background:var(--orange);color:#fff;border:none;border-radius:12px;padding:14px;font-family:var(--fb);font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 4px 20px rgba(255,107,53,.3)}
+.shca{background:var(--n4);color:var(--tx2);border:none;border-radius:12px;padding:14px 18px;font-family:var(--fb);font-size:15px;cursor:pointer}
+.sherr{font-size:12px;color:var(--red);margin:-6px 0 10px;display:none}
+.trow{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.tlbl{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--tx3);min-width:36px}
+.tsel{flex:1;background:var(--n3);border:1.5px solid var(--bd2);border-radius:12px;padding:13px 14px;font-family:var(--fb);font-size:14px;color:var(--tx);outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%238fa3b8' d='M5 6L0 0h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:30px}
+.tsel:focus{border-color:var(--orange)}
+
+/* ── PIN ── */
+.pinwrap{display:flex;gap:12px;justify-content:center;margin:8px 0 20px}
+.pind{width:54px;height:64px;background:var(--n3);border:2px solid var(--bd2);border-radius:14px;font-family:var(--fd);font-size:32px;font-weight:800;color:var(--tx);text-align:center;outline:none;transition:border-color .2s;-webkit-text-security:disc}
+.pind:focus{border-color:var(--orange)}
+.pind.fl{border-color:rgba(255,107,53,.5);color:var(--orange)}
+
+/* ── PDF ── */
+.pdfacts{display:flex;gap:10px;margin-top:16px}
+.pdfbtn{flex:1;padding:13px;border-radius:12px;border:1.5px solid var(--bd2);background:var(--n3);color:var(--tx2);font-family:var(--fb);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+.pdfbtn:hover{border-color:var(--orange);color:var(--tx)}
+.pdfbtn.pri{background:var(--orange);border-color:var(--orange);color:#fff;box-shadow:0 4px 20px rgba(255,107,53,.3)}
+.pdfbtn:active{transform:scale(.97)}
+
+/* ── INSTALL ── */
+.instb{background:linear-gradient(135deg,var(--odim),rgba(0,201,177,.12));border:1px solid rgba(255,107,53,.25);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px}
+.instb-icon{font-size:24px;flex-shrink:0}
+.instb-txt h4{font-family:var(--fd);font-size:16px;font-weight:700;margin-bottom:2px}
+.instb-txt p{font-size:12px;color:var(--tx2);line-height:1.4}
+.instb-btn{background:var(--orange);color:#fff;border:none;border-radius:10px;padding:9px 14px;font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0;white-space:nowrap}
+.instb-x{background:none;border:none;color:var(--tx3);cursor:pointer;font-size:18px;flex-shrink:0;padding:2px}
+
+/* ── PRINT ── */
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  body{background:#fff!important;color:#111!important;font-family:'DM Sans',Arial,sans-serif;font-size:12px;margin:0}
+  #app>*:not(#printReport){display:none!important}
+  #printReport{display:block!important}
+  .prpg{page-break-after:always;padding:32px 36px}
+  .prpg:last-child{page-break-after:avoid}
+  .prhdr{display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #FF6B35;padding-bottom:14px;margin-bottom:22px}
+  .prlogo{display:flex;align-items:center;gap:10px}
+  .prlogo img{width:34px;height:34px;border-radius:6px;object-fit:cover}
+  .prlogo-txt{font-family:'Barlow Condensed',Arial,sans-serif;font-size:26px;font-weight:800;color:#FF6B35;letter-spacing:1px}
+  .prdate{font-size:11px;color:#888}
+  .prprow{display:flex;align-items:center;gap:18px;margin-bottom:22px}
+  .pravatar{width:56px;height:56px;background:#FFF0EB;border:2px solid #FF6B35;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',Arial,sans-serif;font-size:22px;font-weight:800;color:#FF6B35;flex-shrink:0}
+  .prpname{font-family:'Barlow Condensed',Arial,sans-serif;font-size:32px;font-weight:800;color:#111;line-height:1}
+  .prpsub{font-size:12px;color:#666;margin-top:4px}
+  .prigrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px}
+  .pribox{background:#f8f8f8;border-radius:8px;padding:10px 14px}
+  .prilbl{font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:#999;margin-bottom:3px;font-weight:600}
+  .prival{font-size:16px;font-weight:700;color:#111}
+  .prstitle{font-family:'Barlow Condensed',Arial,sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#888;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .prsdot{width:7px;height:7px;border-radius:50%;display:inline-block}
+  .prsgrid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:22px}
+  .prskrow{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f0f0}
+  .prskrow:last-child{border-bottom:none}
+  .prskname{font-size:11px;color:#444}
+  .prskdots{display:flex;gap:3px;align-items:center}
+  .prskdot{width:8px;height:8px;border-radius:50%;background:#e8e8e8}
+  .prskdot.o{background:#FF6B35}.prskdot.t{background:#00C9B1}.prskdot.p{background:#9B72CF}
+  .prsknum{font-size:12px;font-weight:700;margin-left:6px}
+  .prradar{width:160px;height:160px}
+  .prscgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:22px}
+  .prschdr{font-size:9px;font-weight:700;text-transform:uppercase;color:#999;text-align:center;margin-bottom:4px;letter-spacing:.5px}
+  .prscslot{background:#f8f8f8;border-radius:6px;min-height:50px;padding:5px 4px;font-size:8.5px;text-align:center;color:#666;line-height:1.4;display:flex;align-items:center;justify-content:center}
+  .prscslot.fill{background:#FFF0EB;color:#FF6B35;font-weight:600}
+  .prgwrap{margin-bottom:22px}
+  .prgitem{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid #f0f0f0}
+  .prgitem:last-child{border-bottom:none}
+  .prgcb{width:14px;height:14px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:8px}
+  .prgcb.dn{background:#48C774;border-color:#48C774;color:#fff}
+  .prgtxt{font-size:12px;line-height:1.4}
+  .prgtxt.dn{text-decoration:line-through;color:#999}
+  .prcbox{background:#f8f8f8;border-radius:8px;padding:12px 14px;font-size:12px;color:#444;line-height:1.7;white-space:pre-wrap}
+  .prfoot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #eee;padding-top:10px;margin-top:18px}
+  .prfoot-txt{font-size:10px;color:#bbb}
+  .prempty{font-size:12px;color:#bbb;font-style:italic}
+}
+#printReport{display:none}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- LOADING -->
+<div id="loadingScreen">
+  <img src="icons/icon-192.png" style="width:56px;height:56px;border-radius:12px;object-fit:cover;margin-bottom:6px" alt=""/>
+  <div class="spin"></div>
+  <div class="loading-txt" id="ltxt">Starting HoopTrack…</div>
+</div>
+
+<!-- OFFLINE BANNER -->
+<div id="offlineBanner">⚠ Offline — changes will sync when reconnected</div>
+
+<!-- SETUP SCREEN -->
+<div id="setupScreen">
+  <img class="setup-logo" src="icons/icon-512.png" alt="HoopTrack"/>
+  <div class="setup-title">Hoop<em>Track</em></div>
+  <div class="setup-sub">One-time setup — paste your Google Apps Script URL to connect the shared database.</div>
+  <input class="setup-inp" type="url" id="setupUrl" placeholder="https://script.google.com/macros/s/…/exec"/>
+  <div class="setup-err" id="setupErr"></div>
+  <div class="setup-hint">Find this URL in Apps Script under Deploy → Manage deployments. Only needs to be done once per device.</div>
+  <button class="setup-btn" onclick="doSetup()">Connect &amp; continue</button>
+</div>
+
+<!-- HOME SCREEN -->
+<div id="homeScreen">
+  <img class="home-logo" src="icons/icon-512.png" alt="HoopTrack"/>
+  <div class="home-h">Hoop<em>Track</em></div>
+  <div class="home-tag"><strong>Be kind to yourself.</strong><br/>Select your name or log in as a coach.</div>
+  <div class="home-sel-wrap">
+    <select class="home-sel" id="homeSel" onchange="onHomeSelect(this.value)">
+      <option value="">— Select your name —</option>
+    </select>
+  </div>
+  <div class="home-hint">You'll be asked for your PIN after selecting</div>
+  <div class="home-div">or</div>
+  <button class="coach-btn" onclick="openCoachLogin()">🔒 Coach login</button>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp" style="display:none;flex-direction:column;height:100dvh;overflow:hidden">
+  <div class="hdr">
+    <div class="hdr-logo">
+      <img class="logo-img" src="icons/icon-192.png" alt="HoopTrack"/>
+      <div class="logo-txt">Hoop<em>Track</em></div>
+    </div>
+    <div class="hdr-right">
+      <div class="sync-wrap"><div class="sync-dot" id="syncDot"></div><span id="syncTxt">Synced</span></div>
+      <button class="ibtn" onclick="openPDFSheet()" title="Export report">📄</button>
+      <button class="ibtn" id="settBtn" onclick="toggleSettings()" title="Settings">⚙</button>
+      <button class="ibtn" id="coachBtn" onclick="toggleCoachEdit()" title="Toggle editing" style="display:none">🔒</button>
+      <button class="ibtn" onclick="logout()" title="Log out">↩</button>
+    </div>
+  </div>
+  <div class="roster-bar" id="rosterBar" style="display:none">
+    <div class="rsel-wrap"><select class="rsel" id="rosterSel" onchange="switchPlayer(this.value)"></select></div>
+    <button class="rab add" onclick="openAddPlayer()">+</button>
+    <button class="rab rem" onclick="removePlayer()">✕</button>
+  </div>
+  <div class="scroll">
+    <div class="instb" id="installBanner" style="display:none">
+      <span class="instb-icon">📲</span>
+      <div class="instb-txt"><h4>Install HoopTrack</h4><p>Add to home screen — works offline too.</p></div>
+      <button class="instb-btn" onclick="doInstall()">Install</button>
+      <button class="instb-x" onclick="dismissInstall()">✕</button>
+    </div>
+    <div class="card scard" id="settPanel"><div class="chdr"><div class="ctitle"><span class="dot" style="background:var(--tx2)"></span>Settings</div></div><div id="settContent"></div></div>
+    <div class="stag"><div class="stag-dot"></div><span id="stagTxt">Logged in</span></div>
+    <div class="hero">
+      <div class="avatar" id="heroAv">–</div>
+      <div class="hero-info"><div class="hero-name" id="heroN">Player</div><div class="hero-meta" id="heroM">No updates yet</div></div>
+    </div>
+    <div class="card">
+      <div class="chdr"><div class="ctitle"><span class="dot" style="background:var(--orange)"></span>Player info</div></div>
+      <div class="irow">
+        <div class="iblock"><div class="ilbl">Age</div><input class="iinp" id="fAge" type="text" placeholder="—" disabled/></div>
+        <div class="iblock"><div class="ilbl">Height</div><input class="iinp" id="fHeight" type="text" placeholder="—" disabled/></div>
+        <div class="iblock"><div class="ilbl">Weight</div><input class="iinp" id="fWeight" type="text" placeholder="—" disabled/></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="chdr"><div class="ctitle"><span class="dot" style="background:var(--orange)"></span>Cognitive skills</div><span class="stag2">1–5</span></div>
+      <div class="srw"><div class="slist" id="cogList"></div><div class="rw"><canvas id="cogR"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="chdr"><div class="ctitle"><span class="dot" style="background:var(--teal)"></span>Physical &amp; mental</div><span class="stag2">1–5</span></div>
+      <div class="srw"><div class="slist" id="physList"></div><div class="rw"><canvas id="physR"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="chdr"><div class="ctitle"><span class="dot" style="background:var(--purple)"></span>Basketball skills</div><span class="stag2">1–5</span></div>
+      <div class="srw"><div class="slist" id="bballList"></div><div class="rw"><canvas id="bballR"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="chdr"><div class="ctitle"><span class="dot" style="background:var(--teal)"></span>Schedule &amp; goals</div></div>
+      <div class="wtabs">
+        <button class="wtab on" onclick="switchWeek('odd',this)">Odd week</button>
+        <button class="wtab" onclick="switchWeek('even',this)">Even week</button>
+      </div>
+      <div class="wgrid" id="wGrid"></div>
+      <div class="gwrap">
+        <div class="gtitle">Goals</div>
+        <div id="gList"></div>
+        <div class="garow" id="gaRow" style="display:none">
+          <input class="ginp" id="gInp" placeholder="Add a new goal…"/>
+          <button class="gabtn" onclick="addGoal()">Add</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="chdr"><div class="ctitle"><span class="dot" style="background:#FFD23F"></span>General comments</div></div>
+      <textarea class="cta" id="ctaTa" placeholder="Coaching notes, observations…" disabled></textarea>
+      <div class="ecredit" id="ecredit"></div>
+    </div>
+  </div>
+</div>
+<div id="printReport"></div>
+</div>
+
+<!-- PLAYER PIN -->
+<div class="ov" id="ovPin">
+  <div class="sheet">
+    <div class="shandle"></div>
+    <div class="shtitle" id="pinTitle">Enter your PIN</div>
+    <div class="shsub">Enter your 4-digit PIN to access your profile.</div>
+    <div class="pinwrap"><input class="pind" id="p0" type="number" min="0" max="9" inputmode="numeric"/><input class="pind" id="p1" type="number" min="0" max="9" inputmode="numeric"/><input class="pind" id="p2" type="number" min="0" max="9" inputmode="numeric"/><input class="pind" id="p3" type="number" min="0" max="9" inputmode="numeric"/></div>
+    <div class="sherr" id="pinErr">Incorrect PIN. Please try again.</div>
+    <div class="shacts"><button class="shca" onclick="cancelPin()">Cancel</button><button class="shok" onclick="confirmPin()">Log in</button></div>
+  </div>
+</div>
+
+<!-- CHANGE PIN -->
+<div class="ov" id="ovChangePin">
+  <div class="sheet">
+    <div class="shandle"></div>
+    <div class="shtitle">Change your PIN</div>
+    <div class="shsub" id="changePinSub">Choose a new 4-digit PIN.</div>
+    <div style="margin-bottom:8px;font-size:12px;color:var(--tx3)">New PIN</div>
+    <div class="pinwrap"><input class="pind" id="np0" type="number" min="0" max="9" inputmode="numeric"/><input class="pind" id="np1" type="number" min="0" max="9" inputmode="numeric"/><input class="pind" id="np2" type="number" min="0" max="9" inputmode="numeric"/><input class="pind" id="np3" type="number" min="0" max="9" inputmode="numeric"/></div>
+    <div style="margin-bottom:8px;font-size:12px;color:var(--tx3)">Confirm new PIN</div>
+    <div class="pinwrap"><input class="pind" id="cp0" type="number" min="0" max="9" inputmode="numeric"/><input class="pind" id="cp1" type="number" min="0" max="9" inputmode="numeric"/><input class="pind" id="cp2" type="number" min="0" max="9" inputmode="numeric"/><input class="pind" id="cp3" type="number" min="0" max="9" inputmode="numeric"/></div>
+    <div class="sherr" id="changePinErr"></div>
+    <div class="shacts"><button class="shca" id="changePinSkip" onclick="closeOv('ovChangePin')">Skip for now</button><button class="shok" onclick="confirmChangePin()">Save PIN</button></div>
+  </div>
+</div>
+
+<!-- COACH LOGIN -->
+<div class="ov" id="ovCoach">
+  <div class="sheet">
+    <div class="shandle"></div>
+    <div class="shtitle">Coach login</div>
+    <div class="shsub">Enter your name and the shared coach password.</div>
+    <input class="shinp" type="text" id="coachName" placeholder="Your name (e.g. Coach Will)" autocomplete="name"/>
+    <input class="shinp" type="password" id="coachPass" placeholder="Password"/>
+    <div class="sherr" id="coachErr"></div>
+    <div class="shacts"><button class="shca" onclick="closeOv('ovCoach')">Cancel</button><button class="shok" onclick="confirmCoach()">Unlock</button></div>
+  </div>
+</div>
+
+<!-- ADD PLAYER -->
+<div class="ov" id="ovAdd">
+  <div class="sheet">
+    <div class="shandle"></div>
+    <div class="shtitle">Add player</div>
+    <div class="shsub">PIN will be set to 0000 — player will be prompted to change it on first login.</div>
+    <input class="shinp" type="text" id="newName" placeholder="Player name"/>
+    <input class="shinp" type="text" id="newAge" placeholder="Age"/>
+    <input class="shinp" type="text" id="newHeight" placeholder="Height (e.g. 5'8&quot;)"/>
+    <input class="shinp" type="text" id="newWeight" placeholder="Weight (e.g. 140 lbs)"/>
+    <div class="shacts"><button class="shca" onclick="closeOv('ovAdd')">Cancel</button><button class="shok" onclick="confirmAdd()">Add player</button></div>
+  </div>
+</div>
+
+<!-- SCHEDULE SLOT -->
+<div class="ov" id="ovSlot">
+  <div class="sheet">
+    <div class="shandle"></div>
+    <div class="shtitle" id="slotTitle">Edit session</div>
+    <div class="shsub">Set the event type and times.</div>
+    <input class="shinp" type="text" id="slotType" placeholder="Event (e.g. Training, Game, Rest)"/>
+    <div class="trow"><span class="tlbl">Start</span><select class="tsel" id="slotStart"></select></div>
+    <div class="trow"><span class="tlbl">End</span><select class="tsel" id="slotEnd"></select></div>
+    <div class="shacts"><button class="shca" onclick="clearSlot()">Clear slot</button><button class="shok" onclick="saveSlot()">Save</button></div>
+  </div>
+</div>
+
+<!-- PDF -->
+<div class="ov" id="ovPDF">
+  <div class="sheet">
+    <div class="shandle"></div>
+    <div class="shtitle">Export report</div>
+    <div class="shsub" id="pdfSub">Export a full progress report.</div>
+    <div class="pdfacts"><button class="pdfbtn pri" onclick="doPrint()">🖨 Print / Save PDF</button></div>
+    <div class="pdfacts" style="margin-top:10px"><button class="pdfbtn" onclick="openEmailSh()">✉️ Send via email</button></div>
+    <div style="margin-top:16px;font-size:12px;color:var(--tx3);line-height:1.6"><strong style="color:var(--tx2)">Print / Save PDF</strong> — opens your device's print dialog.<br/><br/><strong style="color:var(--tx2)">Send via email</strong> — opens your email app with the report pre-filled.</div>
+    <div class="shacts" style="margin-top:20px"><button class="shca" onclick="closeOv('ovPDF')">Close</button></div>
+  </div>
+</div>
+
+<!-- EMAIL -->
+<div class="ov" id="ovEmail">
+  <div class="sheet">
+    <div class="shandle"></div>
+    <div class="shtitle">Send via email</div>
+    <div class="shsub">Enter the recipient's email address.</div>
+    <input class="shinp" type="email" id="emailTo" placeholder="Email address" inputmode="email"/>
+    <div class="sherr" id="emailErr">Please enter a valid email address.</div>
+    <div class="shacts"><button class="shca" onclick="closeOv('ovEmail')">Cancel</button><button class="shok" onclick="doEmail()">Open email app</button></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// HOOPTRACK — FINAL BUILD
+// ═══════════════════════════════════════════════════════
+const URL_KEY  = 'ht_url';
+const DAYS     = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const DEF_SCO  = {
+  cog:   {Running:0,Jumping:0,Stopping:0,Pivot:0,Footwork:0},
+  phys:  {Endurance:0,Strength:0,'M. Endurance':0,'M. Strength':0,Composure:0,Focus:0,'Off. Awareness':0,'Def. Awareness':0},
+  bball: {Shooting:0,Passing:0,Dribbling:0,'Off. Reb.':0,'Def. Reb.':0,Cutting:0,Flashing:0,Replacing:0,Screening:0,'Roll/Pop':0}
+};
+
+// ── State ──────────────────────────────────────────────
+var URL        = localStorage.getItem(URL_KEY) || '';
+var players    = {};   // name -> player object (live from server)
+var roster     = [];   // ordered list of names
+var coachPass  = 'coach123';
+var session    = null; // { type:'player'|'coach', name }
+var coachEdit  = false;
+var curP       = null;
+var curW       = 'odd';
+var editSlot   = null;
+var pendingP   = null;
+var settOpen   = false;
+var charts     = {};
+var deferredInstall = null;
+var saveTimer  = null;
+
+// ── API ────────────────────────────────────────────────
+function setSyncState(s) {
+  var dot = document.getElementById('syncDot');
+  var txt = document.getElementById('syncTxt');
+  if (!dot) return;
+  dot.className = 'sync-dot' + (s==='busy'?' busy':s==='err'?' err':'');
+  txt.textContent = s==='busy'?'Saving…':s==='err'?'Offline':'Synced';
+}
+
+async function apiFetch(params) {
+  if (!URL) return { ok:false, error:'No URL configured' };
+  try {
+    var qs  = Object.keys(params).map(k => k+'='+encodeURIComponent(params[k])).join('&');
+    var res = await fetch(URL + '?' + qs, { redirect:'follow' });
+    var txt = await res.text();
+    return JSON.parse(txt);
+  } catch(e) {
+    return { ok:false, error:e.toString() };
+  }
+}
+
+async function apiPost(body) {
+  if (!URL) return { ok:false, error:'No URL configured' };
+  try {
+    var res = await fetch(URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body),
+      redirect:'follow'
+    });
+    var txt = await res.text();
+    return JSON.parse(txt);
+  } catch(e) {
+    return { ok:false, error:e.toString() };
+  }
+}
+
+// ── Boot ───────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', function() {
+  setupPins(['p','np','cp']);
+  fillTimeSelects();
+  if (!URL) {
+    hide('loadingScreen');
+    show('setupScreen');
+  } else {
+    boot();
+  }
+});
+
+async function boot() {
+  show('loadingScreen');
+  hide('setupScreen'); hide('homeScreen'); hide('mainApp');
+  setLTxt('Connecting…');
+
+  // 1. Run setup on the script (creates sheet/headers/defaults if needed)
+  setLTxt('Setting up database…');
+  var setup = await apiFetch({ action:'setup' });
+  if (!setup.ok) { showOffline(true); }
+
+  // 2. Load settings
+  setLTxt('Loading settings…');
+  var sett = await apiFetch({ action:'getSettings' });
+  if (sett.ok) { coachPass = sett.coachPassword; }
+
+  // 3. Load ALL players at once
+  setLTxt('Loading players…');
+  var all = await apiFetch({ action:'getAllPlayers' });
+  if (all.ok) {
+    players = all.players || {};
+    roster  = Object.keys(players).sort(function(a,b){ return a.localeCompare(b); });
+    showOffline(false);
+  } else {
+    showOffline(true);
+    showToast('Could not reach database — check your connection.');
+  }
+
+  hide('loadingScreen');
+  show('homeScreen');
+  popHomeSelect();
+}
+
+async function doSetup() {
+  var url = document.getElementById('setupUrl').value.trim();
+  var err = document.getElementById('setupErr');
+  err.style.display = 'none';
+
+  if (!url || !url.includes('script.google.com')) {
+    err.textContent = 'Please paste a valid Google Apps Script URL.';
+    err.style.display = 'block';
+    return;
+  }
+
+  show('loadingScreen'); hide('setupScreen');
+  setLTxt('Testing connection…');
+  URL = url;
+
+  var ping = await apiFetch({ action:'ping' });
+  if (!ping.ok) {
+    hide('loadingScreen'); show('setupScreen');
+    err.textContent = 'Could not connect. Make sure:\n• The URL ends in /exec\n• "Who has access" is set to Anyone\n• You authorised the script when deploying';
+    err.style.display = 'block';
+    URL = '';
+    return;
+  }
+
+  localStorage.setItem(URL_KEY, URL);
+  boot();
+}
+
+// ── Helpers ────────────────────────────────────────────
+function show(id, dt) { document.getElementById(id).style.display = dt || 'flex'; }
+function hide(id)     { document.getElementById(id).style.display = 'none'; }
+function setLTxt(t)   { var el=document.getElementById('ltxt'); if(el) el.textContent=t; }
+function showOffline(v){ document.getElementById('offlineBanner').style.display=v?'block':'none'; }
+
+function ini(n) {
+  var p = n.trim().split(' ');
+  return p.length>1 ? (p[0][0]+p[1][0]).toUpperCase() : n.slice(0,2).toUpperCase();
+}
+
+function defaultPlayer(name) {
+  return { name:name, age:'', height:'', weight:'', pin:'0000', firstLogin:true,
+    scores: JSON.parse(JSON.stringify(DEF_SCO)),
+    schedule:{ odd:{}, even:{} }, goals:[], comments:'', lastCoach:'', lastUpdated:'' };
+}
+
+// ── Home screen ────────────────────────────────────────
+function popHomeSelect() {
+  var sel = document.getElementById('homeSel');
+  sel.innerHTML = '<option value="">— Select your name —</option>' +
+    roster.map(function(n){ return '<option value="'+n+'">'+n+'</option>'; }).join('');
+  sel.value = '';
+}
+
+async function onHomeSelect(name) {
+  if (!name) return;
+  pendingP = name;
+
+  // Refresh player data from server
+  setLTxt('Loading ' + name + '…');
+  show('loadingScreen');
+  hide('homeScreen');
+
+  var res = await apiFetch({ action:'getAllPlayers' });
+  if (res.ok) {
+    players = res.players || {};
+    roster  = Object.keys(players).sort(function(a,b){ return a.localeCompare(b); });
+    showOffline(false);
+  }
+
+  hide('loadingScreen');
+
+  if (!players[name]) {
+    showToast('Player not found. Please try again.');
+    show('homeScreen');
+    document.getElementById('homeSel').value = '';
+    return;
+  }
+
+  // Show PIN overlay
+  document.getElementById('pinTitle').textContent = 'Hi ' + name + '! Enter your PIN';
+  clearPin('p');
+  document.getElementById('pinErr').style.display = 'none';
+  openOv('ovPin');
+  setTimeout(function(){ document.getElementById('p0').focus(); }, 400);
+  document.getElementById('homeSel').value = '';
+}
+
+function cancelPin() { pendingP=null; closeOv('ovPin'); show('homeScreen'); }
+
+function confirmPin() {
+  var pin = getPin('p');
+  var p   = players[pendingP];
+  if (!p) return;
+  if (pin !== p.pin) {
+    document.getElementById('pinErr').style.display = 'block';
+    clearPin('p');
+    setTimeout(function(){ document.getElementById('p0').focus(); }, 100);
+    return;
+  }
+  closeOv('ovPin');
+  session = { type:'player', name:pendingP };
+  pendingP = null;
+  if (p.firstLogin) {
+    document.getElementById('changePinSub').textContent = 'Your PIN is 0000. Please set a new PIN to secure your profile.';
+    clearPin('np'); clearPin('cp');
+    document.getElementById('changePinErr').style.display = 'none';
+    openOv('ovChangePin');
+    setTimeout(function(){ document.getElementById('np0').focus(); }, 400);
+  } else { enterApp(); }
+}
+
+async function confirmChangePin() {
+  var np  = getPin('np'), cp = getPin('cp');
+  var err = document.getElementById('changePinErr');
+  if (np.length<4||!/^\d{4}$/.test(np)){ err.textContent='Please enter all 4 digits.'; err.style.display='block'; return; }
+  if (np==='0000'){ err.textContent='Please choose a PIN other than 0000.'; err.style.display='block'; return; }
+  if (np!==cp){ err.textContent='PINs do not match.'; err.style.display='block'; return; }
+  players[session.name].pin = np;
+  players[session.name].firstLogin = false;
+  closeOv('ovChangePin');
+  scheduleSave(session.name);
+  enterApp();
+}
+
+function openCoachLogin() {
+  document.getElementById('coachErr').style.display='none';
+  document.getElementById('coachName').value='';
+  document.getElementById('coachPass').value='';
+  openOv('ovCoach');
+}
+
+function confirmCoach() {
+  var name = document.getElementById('coachName').value.trim();
+  var pass = document.getElementById('coachPass').value;
+  var err  = document.getElementById('coachErr');
+  if (!name){ err.textContent='Please enter your name.'; err.style.display='block'; return; }
+  if (pass !== coachPass){ err.textContent='Incorrect password.'; err.style.display='block'; return; }
+  session = { type:'coach', name:name };
+  closeOv('ovCoach');
+  coachEdit = true;
+  enterApp();
+}
+
+// ── Enter app ──────────────────────────────────────────
+function enterApp() {
+  hide('homeScreen');
+  var ma = document.getElementById('mainApp');
+  ma.style.display = 'flex';
+
+  if (session.type === 'coach') {
+    document.getElementById('stagTxt').textContent = 'Coach mode — ' + session.name;
+    document.getElementById('rosterBar').style.display = 'flex';
+    document.getElementById('coachBtn').style.display  = 'flex';
+    coachEdit = true;
+    popRosterSelect();
+    curP = roster[0];
+    document.getElementById('rosterSel').value = curP;
+  } else {
+    document.getElementById('stagTxt').textContent = 'Logged in as ' + session.name;
+    document.getElementById('rosterBar').style.display = 'none';
+    document.getElementById('coachBtn').style.display  = 'none';
+    coachEdit = false;
+    curP = session.name;
+  }
+  buildSettings();
+  loadPlayer(curP);
+}
+
+function logout() {
+  session=null; coachEdit=false; curP=null; curW='odd'; settOpen=false;
+  document.getElementById('settPanel').classList.remove('open');
+  document.getElementById('settBtn').classList.remove('on');
+  hide('mainApp');
+  show('homeScreen');
+  popHomeSelect();
+}
+
+// ── Roster ─────────────────────────────────────────────
+function popRosterSelect() {
+  var sel = document.getElementById('rosterSel');
+  sel.innerHTML = roster.map(function(n){ return '<option value="'+n+'">'+n+'</option>'; }).join('');
+  if (curP) sel.value = curP;
+}
+
+async function switchPlayer(name) {
+  curP = name; curW = 'odd';
+  document.querySelectorAll('.wtab').forEach(function(t,i){ t.classList.toggle('on',i===0); });
+  // Always refresh from server when switching
+  var res = await apiFetch({ action:'getAllPlayers' });
+  if (res.ok) { players=res.players||{}; roster=Object.keys(players).sort(function(a,b){return a.localeCompare(b);}); }
+  loadPlayer(curP);
+}
+
+// ── Load player ────────────────────────────────────────
+function loadPlayer(name) {
+  var p = players[name];
+  if (!p) return;
+  document.getElementById('heroAv').textContent  = ini(name);
+  document.getElementById('heroN').textContent   = name;
+  document.getElementById('heroM').textContent   = p.lastUpdated ? 'Updated '+p.lastUpdated+' · '+p.lastCoach : 'No updates yet';
+  document.getElementById('fAge').value    = p.age    || '';
+  document.getElementById('fHeight').value = p.height || '';
+  document.getElementById('fWeight').value = p.weight || '';
+  document.getElementById('ctaTa').value   = p.comments || '';
+  document.getElementById('ecredit').textContent = p.lastCoach ? 'Last edited by '+p.lastCoach : '';
+  applyLock(); renderSkills(); renderSched(); renderGoals();
+}
+
+// ── Save (debounced) ───────────────────────────────────
+function scheduleSave(name) {
+  clearTimeout(saveTimer);
+  setSyncState('busy');
+  saveTimer = setTimeout(function(){ doSave(name); }, 1200);
+}
+
+async function doSave(name) {
+  var p = players[name];
+  if (!p) return;
+  var res = await apiPost({ action:'savePlayer', player:p });
+  if (res.ok) { setSyncState('synced'); showOffline(false); }
+  else        { setSyncState('err');    showOffline(true);  showToast('Could not save — will retry.'); }
+}
+
+function markUpdated() {
+  var d   = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  var who = session.type==='coach' ? session.name : curP;
+  players[curP].lastUpdated = d;
+  players[curP].lastCoach   = who;
+  document.getElementById('heroM').textContent   = 'Updated '+d+' · '+who;
+  document.getElementById('ecredit').textContent = 'Last edited by '+who;
+  scheduleSave(curP);
+}
+
+// ── Lock / unlock ──────────────────────────────────────
+function canEdit() { return coachEdit; }
+function applyLock() {
+  var e = canEdit();
+  ['fAge','fHeight','fWeight','ctaTa'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.disabled=!e;
+  });
+  document.getElementById('gaRow').style.display = e?'flex':'none';
+}
+function toggleCoachEdit() {
+  coachEdit = !coachEdit;
+  document.getElementById('coachBtn').textContent = coachEdit?'🔓':'🔒';
+  document.getElementById('coachBtn').classList.toggle('on',coachEdit);
+  applyLock(); renderSkills(); renderSched(); renderGoals();
+}
+
+// ── Skills ─────────────────────────────────────────────
+function renderSkills() {
+  var p = players[curP]; if (!p) return;
+  rGroup('cogList','cogR',  p.scores.cog,  'cog',  '#FF6B35');
+  rGroup('physList','physR', p.scores.phys, 'phys', '#00C9B1');
+  rGroup('bballList','bballR',p.scores.bball,'bball','#9B72CF');
+}
+
+function rGroup(lid,cid,scores,grp,hex) {
+  document.getElementById(lid).innerHTML = Object.entries(scores).map(function(e){
+    var s=e[0],v=e[1];
+    return '<div class="srow"><span class="sname">'+s+'</span><div class="sright">'+(canEdit()?
+      '<div class="stpr"><button class="sb m" onclick="chScore(\''+grp+'\',\''+s+'\',-1)">−</button><span class="sval" style="color:'+hex+';min-width:20px;text-align:center">'+v+'</span><button class="sb p" style="background:'+hex+'" onclick="chScore(\''+grp+'\',\''+s+'\',1)">+</button></div>':
+      '<div class="dpips">'+[1,2,3,4,5].map(function(i){return '<div class="pip" style="'+(i<=v?'background:'+hex:'')+'"></div>';}).join('')+'</div><span class="sval" style="color:'+hex+'">'+( v||'—')+'</span>'
+    )+'</div></div>';
+  }).join('');
+  drawRadar(cid,scores,hex);
+}
+
+function chScore(grp,skill,d) {
+  var p=players[curP];
+  p.scores[grp][skill]=Math.max(0,Math.min(5,p.scores[grp][skill]+d));
+  markUpdated(); renderSkills();
+}
+
+function drawRadar(id,scores,hex) {
+  var c=document.getElementById(id); if(!c) return;
+  if(charts[id]){charts[id].destroy();delete charts[id];}
+  charts[id]=new Chart(c,{type:'radar',
+    data:{labels:Object.keys(scores),datasets:[{data:Object.values(scores),backgroundColor:hex+'22',borderColor:hex,borderWidth:2,pointBackgroundColor:hex,pointRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},
+      scales:{r:{min:0,max:5,ticks:{display:false},grid:{color:'rgba(255,255,255,0.06)'},angleLines:{color:'rgba(255,255,255,0.06)'},
+        pointLabels:{font:{size:7.5,family:"'DM Sans',sans-serif",weight:'600'},color:'#4d6070'}}}}});
+}
+
+// ── Schedule ───────────────────────────────────────────
+function renderSched() {
+  var sc = (players[curP]||{}).schedule; sc = sc ? sc[curW] : {};
+  document.getElementById('wGrid').innerHTML = DAYS.map(function(d){
+    var ev=sc[d];
+    return '<div class="dcol"><div class="dhdr">'+d+'</div>'+
+      '<div class="dslot'+(ev?' fill':'')+(!canEdit()?' lk':'')+'" '+(canEdit()?'onclick="openSlot(\''+d+'\')" role="button"':'')+'>'+
+      (ev?ev.type+'<br/>'+(ev.start||'')+(ev.end?' –<br/>'+ev.end:''):'<span style="font-size:14px;opacity:.2">'+(canEdit()?'+':'·')+'</span>')+
+      '</div></div>';
+  }).join('');
+}
+
+function switchWeek(w,btn) {
+  curW=w;
+  document.querySelectorAll('.wtab').forEach(function(t){t.classList.remove('on');});
+  btn.classList.add('on'); renderSched();
+}
+
+function openSlot(d) {
+  if (!canEdit()) return;
+  editSlot=d;
+  var ev=players[curP].schedule[curW][d];
+  document.getElementById('slotTitle').textContent=d+' — '+curW+' week';
+  document.getElementById('slotType').value=ev?ev.type:'';
+  fillTimeSelects();
+  document.getElementById('slotStart').value=ev?ev.start||'4:00 PM':'4:00 PM';
+  document.getElementById('slotEnd').value=ev?ev.end||'6:00 PM':'6:00 PM';
+  openOv('ovSlot');
+}
+
+function saveSlot() {
+  var t=document.getElementById('slotType').value.trim();
+  var s=document.getElementById('slotStart').value;
+  var e=document.getElementById('slotEnd').value;
+  if(t){players[curP].schedule[curW][editSlot]={type:t,start:s,end:e};markUpdated();}
+  closeOv('ovSlot');editSlot=null;renderSched();
+}
+function clearSlot() {
+  if(editSlot){delete players[curP].schedule[curW][editSlot];markUpdated();}
+  closeOv('ovSlot');editSlot=null;renderSched();
+}
+
+// ── Goals ──────────────────────────────────────────────
+function renderGoals() {
+  var g=(players[curP]||{}).goals||[];
+  document.getElementById('gList').innerHTML = g.length ? g.map(function(x,i){
+    return '<div class="gitem"><div class="gcb'+(x.done?' chk':'')+'" onclick="'+(canEdit()?'tgoal('+i+')':'')+'">'+'</div>'+
+      '<span class="glbl'+(x.done?' dn':'')+'">'+x.text+'</span>'+
+      (canEdit()?'<span class="gdel" onclick="rgoal('+i+')">×</span>':'')+
+      '</div>';
+  }).join('') : '<div style="font-size:13px;color:var(--tx3);font-style:italic;padding:6px 0">No goals set yet.</div>';
+  document.getElementById('gaRow').style.display = canEdit()?'flex':'none';
+}
+function addGoal(){var inp=document.getElementById('gInp'),t=inp.value.trim();if(!t)return;players[curP].goals.push({text:t,done:false});markUpdated();inp.value='';renderGoals();}
+function tgoal(i){players[curP].goals[i].done=!players[curP].goals[i].done;markUpdated();renderGoals();}
+function rgoal(i){players[curP].goals.splice(i,1);markUpdated();renderGoals();}
+
+// ── Add / remove player ────────────────────────────────
+function openAddPlayer(){['newName','newAge','newHeight','newWeight'].forEach(function(id){document.getElementById(id).value='';});openOv('ovAdd');}
+
+async function confirmAdd() {
+  var name=document.getElementById('newName').value.trim();
+  if (!name) return;
+
+  // Check against live roster (not local cache)
+  if (roster.indexOf(name) > -1) { showToast(name+' already exists on the roster.'); return; }
+
+  setSyncState('busy');
+  var player = defaultPlayer(name);
+  player.age    = document.getElementById('newAge').value;
+  player.height = document.getElementById('newHeight').value;
+  player.weight = document.getElementById('newWeight').value;
+
+  // Save to server FIRST, then update local state
+  var res = await apiPost({ action:'addPlayer', player:player });
+  if (!res.ok) {
+    setSyncState('err');
+    showToast('Could not add player — check your connection.');
+    return;
+  }
+
+  // Refresh everything from server
+  var all = await apiFetch({ action:'getAllPlayers' });
+  if (all.ok) {
+    players = all.players||{};
+    roster  = Object.keys(players).sort(function(a,b){return a.localeCompare(b);});
+  }
+
+  setSyncState('synced');
+  closeOv('ovAdd');
+  popHomeSelect();
+  popRosterSelect();
+  document.getElementById('rosterSel').value = name;
+  curP = name;
+  loadPlayer(name);
+  showToast(name+' added!');
+}
+
+async function removePlayer() {
+  if (roster.length<=1){showToast('Cannot remove the last player.');return;}
+  if (!confirm('Remove '+curP+' from the roster?')) return;
+  setSyncState('busy');
+  var res = await apiPost({ action:'removePlayer', name:curP });
+  if (!res.ok) { setSyncState('err'); showToast('Could not remove player.'); return; }
+  var all = await apiFetch({ action:'getAllPlayers' });
+  if (all.ok) { players=all.players||{}; roster=Object.keys(players).sort(function(a,b){return a.localeCompare(b);}); }
+  setSyncState('synced');
+  curP = roster[0];
+  popHomeSelect(); popRosterSelect();
+  document.getElementById('rosterSel').value = curP;
+  loadPlayer(curP);
+}
+
+// ── Settings ───────────────────────────────────────────
+function buildSettings() {
+  var isC = session.type==='coach', isP = session.type==='player', h='';
+  if (isC) {
+    h += '<p style="font-size:13px;color:var(--tx2);margin-bottom:16px">Update the script URL, change the coach password, or reset a player\'s PIN.</p>';
+    h += '<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--tx3);margin-bottom:10px">Database URL</div>';
+    h += '<div class="srow2"><div class="slbl">Google Apps Script URL</div><input class="sinp" type="url" id="sUrl" value="'+URL+'" placeholder="https://script.google.com/…/exec"/></div>';
+    h += '<div class="emsg" id="sUrlErr" style="display:none"></div>';
+    h += '<div style="display:flex;align-items:center;gap:14px;margin-bottom:20px"><button class="sbtn" onclick="saveUrl()">Update &amp; reconnect</button><span class="okmsg" id="sUrlOk" style="display:none">✓ Reconnected!</span></div>';
+    h += '<div style="border-top:1px solid var(--bd);padding-top:16px;margin-bottom:16px"></div>';
+    h += '<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--tx3);margin-bottom:10px">Coach password</div>';
+    h += '<div class="srow2"><div class="slbl">Current password</div><input class="sinp" type="password" id="sCur" placeholder="Current password"/></div>';
+    h += '<div class="srow2"><div class="slbl">New password</div><input class="sinp" type="password" id="sNew" placeholder="Min. 4 characters"/></div>';
+    h += '<div class="srow2"><div class="slbl">Confirm new</div><input class="sinp" type="password" id="sCon" placeholder="Repeat new password"/></div>';
+    h += '<div class="emsg" id="sPwErr" style="display:none"></div>';
+    h += '<div style="display:flex;align-items:center;gap:14px;margin-bottom:20px"><button class="sbtn" onclick="savePass()">Save password</button><span class="okmsg" id="sPwOk" style="display:none">✓ Updated!</span></div>';
+    h += '<div style="border-top:1px solid var(--bd);padding-top:16px"></div>';
+    h += '<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--tx3);margin-bottom:10px;margin-top:16px">Reset player PIN</div>';
+    h += '<p style="font-size:13px;color:var(--tx2);margin-bottom:12px">Resets a player\'s PIN to 0000. They\'ll be prompted to change it on next login.</p>';
+    h += '<div style="display:flex;gap:8px;align-items:center"><select class="sinp" id="resetSel" style="flex:1">'+roster.map(function(n){return '<option value="'+n+'">'+n+'</option>';}).join('')+'</select><button class="sbtn" style="white-space:nowrap" onclick="resetPin()">Reset PIN</button></div>';
+    h += '<div class="okmsg" id="resetOk" style="display:none;margin-top:8px"></div>';
+  }
+  if (isP) {
+    h += '<p style="font-size:13px;color:var(--tx2);margin-bottom:16px">Change your personal PIN.</p>';
+    h += '<div class="srow2"><div class="slbl">New PIN</div><div style="display:flex;gap:8px"><input class="pind" id="sp0" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/><input class="pind" id="sp1" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/><input class="pind" id="sp2" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/><input class="pind" id="sp3" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/></div></div>';
+    h += '<div class="srow2"><div class="slbl">Confirm PIN</div><div style="display:flex;gap:8px"><input class="pind" id="sc0" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/><input class="pind" id="sc1" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/><input class="pind" id="sc2" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/><input class="pind" id="sc3" type="number" min="0" max="9" inputmode="numeric" style="width:48px;height:56px"/></div></div>';
+    h += '<div class="emsg" id="spErr" style="display:none"></div>';
+    h += '<div style="display:flex;align-items:center;gap:14px;margin-top:4px"><button class="sbtn" onclick="savePlayerPin()">Save PIN</button><span class="okmsg" id="spOk" style="display:none">✓ PIN updated!</span></div>';
+  }
+  document.getElementById('settContent').innerHTML = h;
+  if (isP) { setupPins(['sp','sc']); }
+}
+
+function toggleSettings() {
+  settOpen = !settOpen;
+  document.getElementById('settPanel').classList.toggle('open',settOpen);
+  document.getElementById('settBtn').classList.toggle('on',settOpen);
+  if (settOpen) { buildSettings(); document.getElementById('settPanel').scrollIntoView({behavior:'smooth',block:'nearest'}); }
+}
+
+async function saveUrl() {
+  var url=document.getElementById('sUrl').value.trim();
+  var err=document.getElementById('sUrlErr'),ok=document.getElementById('sUrlOk');
+  err.style.display='none';ok.style.display='none';
+  if(!url||!url.includes('script.google.com')){err.textContent='Please enter a valid URL.';err.style.display='block';return;}
+  URL=url;
+  var ping=await apiFetch({action:'ping'});
+  if(!ping.ok){err.textContent='Could not connect to that URL.';err.style.display='block';URL=localStorage.getItem(URL_KEY)||'';return;}
+  localStorage.setItem(URL_KEY,url);
+  // Reload everything
+  var all=await apiFetch({action:'getAllPlayers'});
+  if(all.ok){players=all.players||{};roster=Object.keys(players).sort(function(a,b){return a.localeCompare(b);});}
+  showOffline(false); setSyncState('synced');
+  popHomeSelect(); if(session.type==='coach') popRosterSelect();
+  ok.style.display='inline';setTimeout(function(){ok.style.display='none';},4000);
+}
+
+async function savePass() {
+  var c=document.getElementById('sCur').value,n=document.getElementById('sNew').value,cf=document.getElementById('sCon').value;
+  var err=document.getElementById('sPwErr'),ok=document.getElementById('sPwOk');
+  err.style.display='none';ok.style.display='none';
+  if(c!==coachPass){err.textContent='Current password is incorrect.';err.style.display='block';return;}
+  if(n.length<4){err.textContent='Must be at least 4 characters.';err.style.display='block';return;}
+  if(n!==cf){err.textContent='Passwords do not match.';err.style.display='block';return;}
+  coachPass=n;
+  var res=await apiPost({action:'saveSettings',coachPassword:n});
+  ['sCur','sNew','sCon'].forEach(function(id){document.getElementById(id).value='';});
+  ok.textContent=res.ok?'✓ Updated!':'✓ Saved (offline sync pending)';ok.style.display='inline';
+  setTimeout(function(){ok.style.display='none';},3000);
+}
+
+async function resetPin() {
+  var name=document.getElementById('resetSel').value; if(!name) return;
+  if(players[name]){ players[name].pin='0000'; players[name].firstLogin=true; }
+  var res=await apiPost({action:'savePlayer',player:players[name]});
+  var el=document.getElementById('resetOk');
+  el.textContent=res.ok?'✓ '+name+'\'s PIN reset to 0000!':'✓ Saved locally — will sync when online.';
+  el.style.display='block';setTimeout(function(){el.style.display='none';},3000);
+}
+
+async function savePlayerPin() {
+  var np=getPin('sp'),cp=getPin('sc'),err=document.getElementById('spErr'),ok=document.getElementById('spOk');
+  err.style.display='none';ok.style.display='none';
+  if(np.length<4||!/^\d{4}$/.test(np)){err.textContent='Please enter all 4 digits.';err.style.display='block';return;}
+  if(np==='0000'){err.textContent='Please choose a PIN other than 0000.';err.style.display='block';return;}
+  if(np!==cp){err.textContent='PINs do not match.';err.style.display='block';return;}
+  players[session.name].pin=np;players[session.name].firstLogin=false;
+  scheduleSave(session.name);
+  clearPin('sp');clearPin('sc');
+  ok.style.display='inline';setTimeout(function(){ok.style.display='none';},3000);
+}
+
+// ── Overlays ───────────────────────────────────────────
+function openOv(id){document.getElementById(id).classList.add('show');document.body.style.overflow='hidden';}
+function closeOv(id){document.getElementById(id).classList.remove('show');document.body.style.overflow='';}
+document.querySelectorAll('.ov').forEach(function(ov){
+  ov.addEventListener('click',function(e){
+    if(e.target===ov&&ov.id!=='ovPin'&&ov.id!=='ovChangePin') closeOv(ov.id);
+  });
+});
+
+// ── PIN helpers ────────────────────────────────────────
+function getPin(px){return[0,1,2,3].map(function(i){var e=document.getElementById(px+i);return e?(e.value||'').slice(-1):'';}).join('');}
+function clearPin(px){[0,1,2,3].forEach(function(i){var e=document.getElementById(px+i);if(e){e.value='';e.classList.remove('fl');}});}
+function setupPins(prefixes){
+  prefixes.forEach(function(px){
+    [0,1,2,3].forEach(function(i){
+      var e=document.getElementById(px+i); if(!e) return;
+      e.addEventListener('input',function(){
+        var v=this.value.replace(/\D/g,'').slice(-1);
+        this.value=v; this.classList.toggle('fl',v!=='');
+        if(v&&i<3){var nx=document.getElementById(px+(i+1));if(nx)nx.focus();}
+      });
+      e.addEventListener('keydown',function(ev){
+        if(ev.key==='Backspace'&&!this.value&&i>0){var pr=document.getElementById(px+(i-1));if(pr)pr.focus();}
+      });
+    });
+  });
+}
+
+// ── Time selects ───────────────────────────────────────
+function fillTimeSelects(){
+  var opts=''; for(var h=0;h<24;h++)for(var m=0;m<60;m+=15){var h12=h%12===0?12:h%12,ap=h<12?'AM':'PM',mm=m===0?'00':m;opts+='<option value="'+h12+':'+mm+' '+ap+'">'+h12+':'+mm+' '+ap+'</option>';}
+  ['slotStart','slotEnd'].forEach(function(id){var e=document.getElementById(id);if(e)e.innerHTML=opts;});
+}
+
+// ── PDF / email ────────────────────────────────────────
+function openPDFSheet(){document.getElementById('pdfSub').textContent='Export a full progress report for '+curP+'.';openOv('ovPDF');}
+function openEmailSh(){closeOv('ovPDF');document.getElementById('emailTo').value='';document.getElementById('emailErr').style.display='none';openOv('ovEmail');}
+
+function doPrint(){buildPrintReport();closeOv('ovPDF');setTimeout(function(){window.print();setTimeout(function(){document.getElementById('printReport').innerHTML='';},1500);},200);}
+
+function doEmail(){
+  var to=document.getElementById('emailTo').value.trim();
+  if(!to||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)){document.getElementById('emailErr').style.display='block';return;}
+  var p=players[curP],dt=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  var cs=Object.entries(p.scores.cog).map(function(e){return e[0]+': '+e[1]+'/5';}).join(', ');
+  var ps=Object.entries(p.scores.phys).map(function(e){return e[0]+': '+e[1]+'/5';}).join(', ');
+  var bs=Object.entries(p.scores.bball).map(function(e){return e[0]+': '+e[1]+'/5';}).join(', ');
+  var gs=p.goals.length?p.goals.map(function(g){return (g.done?'[✓]':'[ ]')+' '+g.text;}).join('\n'):'No goals set.';
+  var subj=encodeURIComponent('HoopTrack Report — '+curP+' — '+dt);
+  var body=encodeURIComponent('HoopTrack Player Report\n=======================\nPlayer: '+curP+'\nDate: '+dt+(p.lastCoach?'\nLast updated by: '+p.lastCoach:'')+'\n\nPLAYER INFO\nAge: '+(p.age||'—')+' | Height: '+(p.height||'—')+' | Weight: '+(p.weight||'—')+'\n\nCOGNITIVE SKILLS\n'+cs+'\n\nPHYSICAL & MENTAL\n'+ps+'\n\nBASKETBALL SKILLS\n'+bs+'\n\nGOALS\n'+gs+'\n\nCOMMENTS\n'+(p.comments||'No comments.')+'\n\n---\nGenerated by HoopTrack on '+dt);
+  window.open('mailto:'+to+'?subject='+subj+'&body='+body);
+  closeOv('ovEmail'); showToast('Email app opened!');
+}
+
+function buildPrintReport(){
+  var p=players[curP],dt=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  var ci=capCanvas('cogR'),pi=capCanvas('physR'),bi=capCanvas('bballR');
+  function sdH(sc,cl){return Object.entries(sc).map(function(e){var s=e[0],v=e[1];return'<div class="prskrow"><span class="prskname">'+s+'</span><div class="prskdots">'+[1,2,3,4,5].map(function(i){return'<div class="prskdot'+(i<=v?' '+cl:'')+'"></div>';}).join('')+'<span class="prsknum">'+v+'</span></div></div>';}).join('');}
+  function shH(sc){return DAYS.map(function(d){var ev=sc[d];return'<div><div class="prschdr">'+d+'</div><div class="prscslot'+(ev?' fill':'')+'">'+(ev?ev.type+'<br/>'+(ev.start||'')+(ev.end?' – '+ev.end:''):'—')+'</div></div>';}).join('');}
+  var gH=p.goals.length?p.goals.map(function(g){return'<div class="prgitem"><div class="prgcb'+(g.done?' dn':'')+'">'+( g.done?'✓':'')+'</div><span class="prgtxt'+(g.done?' dn':'')+'">'+g.text+'</span></div>';}).join(''):'<div class="prempty">No goals set.</div>';
+  document.getElementById('printReport').innerHTML=
+  '<div class="prpg"><div class="prhdr"><div class="prlogo"><img src="icons/icon-192.png" alt=""/><span class="prlogo-txt">HoopTrack</span></div><div class="prdate">Player Report · '+dt+'</div></div>'+
+  '<div class="prprow"><div class="pravatar">'+ini(curP)+'</div><div><div class="prpname">'+curP+'</div><div class="prpsub">'+(p.lastUpdated?'Last updated '+p.lastUpdated+' by '+p.lastCoach:'No updates yet')+'</div></div></div>'+
+  '<div class="prigrid"><div class="pribox"><div class="prilbl">Age</div><div class="prival">'+(p.age||'—')+'</div></div><div class="pribox"><div class="prilbl">Height</div><div class="prival">'+(p.height||'—')+'</div></div><div class="pribox"><div class="prilbl">Weight</div><div class="prival">'+(p.weight||'—')+'</div></div></div>'+
+  '<div class="prstitle"><span class="prsdot" style="background:#FF6B35"></span>Cognitive skills</div><div class="prsgrid"><div>'+sdH(p.scores.cog,'o')+'</div>'+(ci?'<img class="prradar" src="'+ci+'"/>':'<div></div>')+'</div>'+
+  '<div class="prstitle"><span class="prsdot" style="background:#00C9B1"></span>Physical &amp; mental</div><div class="prsgrid"><div>'+sdH(p.scores.phys,'t')+'</div>'+(pi?'<img class="prradar" src="'+pi+'"/>':'<div></div>')+'</div></div>'+
+  '<div class="prpg"><div class="prhdr"><div class="prlogo"><img src="icons/icon-192.png" alt=""/><span class="prlogo-txt">HoopTrack</span></div><div class="prdate">'+curP+' · '+dt+'</div></div>'+
+  '<div class="prstitle"><span class="prsdot" style="background:#9B72CF"></span>Basketball skills</div><div class="prsgrid"><div>'+sdH(p.scores.bball,'p')+'</div>'+(bi?'<img class="prradar" src="'+bi+'"/>':'<div></div>')+'</div>'+
+  '<div class="prstitle" style="margin-top:18px"><span class="prsdot" style="background:#00C9B1"></span>Schedule — odd week</div><div class="prscgrid">'+shH(p.schedule.odd)+'</div>'+
+  '<div class="prstitle"><span class="prsdot" style="background:#00C9B1"></span>Schedule — even week</div><div class="prscgrid">'+shH(p.schedule.even)+'</div>'+
+  '<div class="prstitle" style="margin-top:18px"><span class="prsdot" style="background:#FFD23F"></span>Goals</div><div class="prgwrap">'+gH+'</div>'+
+  '<div class="prstitle"><span class="prsdot" style="background:#FFD23F"></span>Comments</div><div class="prcbox">'+(p.comments||'No comments recorded.')+'</div>'+
+  '<div class="prfoot"><span class="prfoot-txt">HoopTrack by Coach Will</span><span class="prfoot-txt">Generated '+dt+'</span></div></div>';
+}
+function capCanvas(id){try{return document.getElementById(id)?.toDataURL('image/png')||'';}catch(e){return '';}}
+
+// ── Toast ──────────────────────────────────────────────
+function showToast(msg){
+  var t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;bottom:calc(env(safe-area-inset-bottom,0px)+24px);left:50%;transform:translateX(-50%);background:#1e2d3d;color:#e8edf5;padding:10px 20px;border-radius:10px;font-size:13px;z-index:999;border:1px solid rgba(255,255,255,.1);white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.4);transition:opacity .3s;pointer-events:none;';document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity='1';clearTimeout(t._t);t._t=setTimeout(function(){t.style.opacity='0';},2800);
+}
+
+// ── Input events ───────────────────────────────────────
+document.getElementById('ctaTa').addEventListener('input',function(){if(canEdit()){players[curP].comments=this.value;markUpdated();}});
+['fAge','fHeight','fWeight'].forEach(function(id){
+  document.getElementById(id).addEventListener('change',function(){
+    if(!canEdit()) return;
+    var k=id==='fAge'?'age':id==='fHeight'?'height':'weight';
+    players[curP][k]=this.value; markUpdated();
+  });
+});
+document.getElementById('gInp').addEventListener('keydown',function(e){if(e.key==='Enter')addGoal();});
+
+// ── PWA ────────────────────────────────────────────────
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredInstall=e;if(!localStorage.getItem('ht_dismissed'))document.getElementById('installBanner').style.display='flex';});
+function doInstall(){if(!deferredInstall)return;deferredInstall.prompt();deferredInstall.userChoice.then(function(){deferredInstall=null;document.getElementById('installBanner').style.display='none';});}
+function dismissInstall(){document.getElementById('installBanner').style.display='none';localStorage.setItem('ht_dismissed','1');}
+window.addEventListener('appinstalled',function(){document.getElementById('installBanner').style.display='none';});
+window.addEventListener('online',function(){showOffline(false);setSyncState('synced');});
+window.addEventListener('offline',function(){showOffline(true);setSyncState('err');});
+if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(function(){});
+</script>
+</body>
+</html>
