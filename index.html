@@ -607,11 +607,18 @@ async function bootApp(){
     persistCache();
   }
 
-  // Load roster
+  // Load roster — always fetch fresh from server
   setLoadingTxt('Loading roster…');
   const roster = await api({action:'getRoster'});
   if(roster.ok){
-    cache.roster = roster.roster;
+    // If roster has changed, clear stale player cache entries
+    const oldRoster = cache.roster || [];
+    const newRoster = roster.roster;
+    // Remove cached players no longer on roster
+    oldRoster.forEach(n => { if(!newRoster.includes(n)) delete cache.players[n]; });
+    // Mark new players as needing a fresh fetch (remove stale cache)
+    newRoster.forEach(n => { if(!oldRoster.includes(n)) delete cache.players[n]; });
+    cache.roster = newRoster;
     persistCache();
   } else {
     // Offline — use cached roster
@@ -936,7 +943,7 @@ function openAddPlayer(){['newName','newAge','newHeight','newWeight'].forEach(id
 async function confirmAdd(){
   const name=document.getElementById('newName').value.trim();
   if(!name)return;
-  if(cache.players[name]){showToast('Player already exists.');return;}
+  if((cache.roster||[]).includes(name)){showToast('Player already exists.');return;}
   const player={name,age:document.getElementById('newAge').value,height:document.getElementById('newHeight').value,weight:document.getElementById('newWeight').value,
     pin:'0000',firstLogin:true,scores:JSON.parse(JSON.stringify(DS)),schedule:{odd:{},even:{}},goals:[],comments:'',lastCoach:'',lastUpdated:''};
   cache.players[name]=player;
