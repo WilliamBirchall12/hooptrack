@@ -527,10 +527,16 @@ function setSyncState(s) {
   txt.textContent = s==='busy'?'Saving…':s==='err'?'Offline':'Synced';
 }
 
+// All requests use GET to avoid CORS issues with Google Apps Script
 async function apiFetch(params) {
   if (!URL) return { ok:false, error:'No URL configured' };
   try {
-    var qs  = Object.keys(params).map(k => k+'='+encodeURIComponent(params[k])).join('&');
+    // For player data, encode as URL param
+    var qs = Object.keys(params).map(function(k) {
+      var v = params[k];
+      if (typeof v === 'object') v = encodeURIComponent(JSON.stringify(v));
+      return k + '=' + encodeURIComponent(v);
+    }).join('&');
     var res = await fetch(URL + '?' + qs, { redirect:'follow' });
     var txt = await res.text();
     return JSON.parse(txt);
@@ -539,20 +545,9 @@ async function apiFetch(params) {
   }
 }
 
+// Alias — all writes also go via GET
 async function apiPost(body) {
-  if (!URL) return { ok:false, error:'No URL configured' };
-  try {
-    var res = await fetch(URL, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(body),
-      redirect:'follow'
-    });
-    var txt = await res.text();
-    return JSON.parse(txt);
-  } catch(e) {
-    return { ok:false, error:e.toString() };
-  }
+  return apiFetch(body);
 }
 
 // ── Boot ───────────────────────────────────────────────
@@ -817,7 +812,7 @@ function scheduleSave(name) {
 async function doSave(name) {
   var p = players[name];
   if (!p) return;
-  var res = await apiPost({ action:'savePlayer', player:p });
+  var res = await apiFetch({ action:'savePlayer', player:p });
   if (res.ok) { setSyncState('synced'); showOffline(false); }
   else        { setSyncState('err');    showOffline(true);  showToast('Could not save — will retry.'); }
 }
@@ -957,7 +952,7 @@ async function confirmAdd() {
   player.weight = document.getElementById('newWeight').value;
 
   // Save to server FIRST, then update local state
-  var res = await apiPost({ action:'addPlayer', player:player });
+  var res = await apiFetch({ action:'addPlayer', player:player });
   if (!res.ok) {
     setSyncState('err');
     showToast('Could not add player — check your connection.');
@@ -985,7 +980,7 @@ async function removePlayer() {
   if (roster.length<=1){showToast('Cannot remove the last player.');return;}
   if (!confirm('Remove '+curP+' from the roster?')) return;
   setSyncState('busy');
-  var res = await apiPost({ action:'removePlayer', name:curP });
+  var res = await apiFetch({ action:'removePlayer', name:curP });
   if (!res.ok) { setSyncState('err'); showToast('Could not remove player.'); return; }
   var all = await apiFetch({ action:'getAllPlayers' });
   if (all.ok) { players=all.players||{}; roster=Object.keys(players).sort(function(a,b){return a.localeCompare(b);}); }
@@ -1061,7 +1056,7 @@ async function savePass() {
   if(n.length<4){err.textContent='Must be at least 4 characters.';err.style.display='block';return;}
   if(n!==cf){err.textContent='Passwords do not match.';err.style.display='block';return;}
   coachPass=n;
-  var res=await apiPost({action:'saveSettings',coachPassword:n});
+  var res=await apiFetch({action:'saveSettings',coachPassword:n});
   ['sCur','sNew','sCon'].forEach(function(id){document.getElementById(id).value='';});
   ok.textContent=res.ok?'✓ Updated!':'✓ Saved (offline sync pending)';ok.style.display='inline';
   setTimeout(function(){ok.style.display='none';},3000);
@@ -1070,7 +1065,7 @@ async function savePass() {
 async function resetPin() {
   var name=document.getElementById('resetSel').value; if(!name) return;
   if(players[name]){ players[name].pin='0000'; players[name].firstLogin=true; }
-  var res=await apiPost({action:'savePlayer',player:players[name]});
+  var res=await apiFetch({action:'savePlayer',player:players[name]});
   var el=document.getElementById('resetOk');
   el.textContent=res.ok?'✓ '+name+'\'s PIN reset to 0000!':'✓ Saved locally — will sync when online.';
   el.style.display='block';setTimeout(function(){el.style.display='none';},3000);
