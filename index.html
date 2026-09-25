@@ -531,10 +531,9 @@ function setSyncState(s) {
 async function apiFetch(params) {
   if (!URL) return { ok:false, error:'No URL configured' };
   try {
-    // For player data, encode as URL param
     var qs = Object.keys(params).map(function(k) {
       var v = params[k];
-      if (typeof v === 'object') v = encodeURIComponent(JSON.stringify(v));
+      if (typeof v === 'object') v = JSON.stringify(v);
       return k + '=' + encodeURIComponent(v);
     }).join('&');
     var res = await fetch(URL + '?' + qs, { redirect:'follow' });
