@@ -494,8 +494,9 @@ html,body{height:100%;background:var(--navy);color:var(--tx);font-family:var(--f
 // ═══════════════════════════════════════════════════════
 // HOOPTRACK — FINAL BUILD
 // ═══════════════════════════════════════════════════════
-const URL_KEY  = 'ht_url';
-const DAYS     = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const URL_KEY     = 'ht_url';
+const DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbyN5kAkvsXulFyYgordNl5f7684EHo3DPVWu0taqV0VH7L_pEPwjfVyCQuERDIEug030Q/exec';
+const DAYS        = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const DEF_SCO  = {
   cog:   {Running:0,Jumping:0,Stopping:0,Pivot:0,Footwork:0},
   phys:  {Endurance:0,Strength:0,'M. Endurance':0,'M. Strength':0,Composure:0,Focus:0,'Off. Awareness':0,'Def. Awareness':0},
@@ -503,7 +504,7 @@ const DEF_SCO  = {
 };
 
 // ── State ──────────────────────────────────────────────
-var URL        = localStorage.getItem(URL_KEY) || '';
+var URL        = localStorage.getItem(URL_KEY) || DEFAULT_URL;
 var players    = {};   // name -> player object (live from server)
 var roster     = [];   // ordered list of names
 var coachPass  = 'coach123';
@@ -553,12 +554,8 @@ async function apiPost(body) {
 window.addEventListener('DOMContentLoaded', function() {
   setupPins(['p','np','cp']);
   fillTimeSelects();
-  if (!URL) {
-    hide('loadingScreen');
-    show('setupScreen');
-  } else {
-    boot();
-  }
+  // URL is always available (baked in as default) so go straight to boot
+  boot();
 });
 
 async function boot() {
